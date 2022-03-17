@@ -19,6 +19,7 @@ services:
     container_name: server
     ports:
       - '3000:3000'
+      - '8080:8000'
     volumes:
       - ./:/app
       - /app/node_modules
@@ -28,6 +29,7 @@ services:
   postgres:
     image: postgres
     restart: always
+    container_name: swcorp_postgres 
     networks:
       - backend
     environment:
@@ -36,6 +38,14 @@ services:
     ports:
       - '5432:5432'
 
+  authenticator:
+    build: ./authenticator
+    image: swcorp/authenticator
+    container_name: swcorp_authenticator
+    networks: 
+      - backend
+    ports:
+      - '8000:8000'
 
 networks:
   backend:
