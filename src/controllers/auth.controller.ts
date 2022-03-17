@@ -5,7 +5,8 @@ import { User } from '@interfaces/users.interface';
 import AuthService from '@services/auth.service';
 
 class AuthController {
-  public authService = new AuthService();
+  public authService = new AuthService('localhost', 8000);
+
 
   public signUp = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
@@ -21,10 +22,10 @@ class AuthController {
   public logIn = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
       const userData: CreateUserDto = req.body;
-      const { cookie, findUser } = await this.authService.login(userData);
+      const { cookie, email } = await this.authService.login(userData);
 
       res.setHeader('Set-Cookie', [cookie]);
-      res.status(200).json({ data: findUser, message: 'login' });
+      res.status(200).json({ data: email, message: 'login' });
     } catch (error) {
       next(error);
     }

@@ -7,9 +7,16 @@ import { DataStoredInToken, TokenData } from '@interfaces/auth.interface';
 import { User } from '@interfaces/users.interface';
 import userModel from '@models/users.model';
 import { isEmpty } from '@utils/util';
+import fetch from 'node-fetch';
 
-class AuthService {
+class AuthService{
   public users = userModel;
+  private authAddr: string;
+  private authPort: number;
+  constructor(authAddr: string, authPort: number){
+    this.authAddr = authAddr;
+    this.authPort = authPort;
+  }
 
   public async signup(userData: CreateUserDto): Promise<User> {
     if (isEmpty(userData)) throw new HttpException(400, "You're not userData");
@@ -23,19 +30,35 @@ class AuthService {
     return createUserData;
   }
 
-  public async login(userData: CreateUserDto): Promise<{ cookie: string; findUser: User }> {
+  public async login(userData: CreateUserDto): Promise<{ cookie: string; email: string }> {
     if (isEmpty(userData)) throw new HttpException(400, "You're not userData");
+    
+    const body = {"username": userData.email, "password": userData.password}
+    console.log(body)
+    let response;
+    try{
+      console.log(`http://${this.authAddr}:${this.authPort}/`)
+      response = await fetch(`http://swcorp_authenticator:8000/`, {method: 'POST', body: JSON.stringify(body)});
+    }
+    catch{
+      throw new HttpException(500, `Cant connect to authenticator`);
+    }
+    
 
-    const findUser: User = this.users.find(user => user.email === userData.email);
-    if (!findUser) throw new HttpException(409, `You're email ${userData.email} not found`);
+    if (response.status == 401){
+      throw new HttpException(401, `Wrong email or password`);
+    }
+    else if (!response.ok){
+      throw new HttpException(response.status, response.text());
+    }
+    else{
+      const email: string = userData.email
+      const tokenData = this.createToken(userData.email);
+      const cookie = this.createCookie(tokenData);
+  
+      return { cookie, email};
+    }
 
-    const isPasswordMatching: boolean = await compare(userData.password, findUser.password);
-    if (!isPasswordMatching) throw new HttpException(409, "You're password not matching");
-
-    const tokenData = this.createToken(findUser);
-    const cookie = this.createCookie(tokenData);
-
-    return { cookie, findUser };
   }
 
   public async logout(userData: User): Promise<User> {
@@ -47,8 +70,8 @@ class AuthService {
     return findUser;
   }
 
-  public createToken(user: User): TokenData {
-    const dataStoredInToken: DataStoredInToken = { id: user.id };
+  public createToken(user: string): TokenData {
+    const dataStoredInToken: DataStoredInToken = { email:  user};
     const secretKey: string = SECRET_KEY;
     const expiresIn: number = 60 * 60;
 
