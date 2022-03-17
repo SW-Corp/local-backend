@@ -34,14 +34,17 @@ class AuthController {
 
   public logOut = async (req: RequestWithUser, res: Response, next: NextFunction): Promise<void> => {
     try {
-      const userData: User = req.user;
-      const logOutUserData: User = await this.authService.logout(userData);
+      const userData: string = req.user;
 
       res.setHeader('Set-Cookie', ['Authorization=; Max-age=0']);
-      res.status(200).json({ data: logOutUserData, message: 'logout' });
+      res.status(200).json({ data: userData, message: 'logout' });
     } catch (error) {
       next(error);
     }
+  };
+
+  public authTest = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    res.status(200).json({message: 'Authorized!' });
   };
 }
 

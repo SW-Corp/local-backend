@@ -60,14 +60,14 @@ class AuthService{
 
   }
 
-  public async logout(userData: User): Promise<User> {
-    if (isEmpty(userData)) throw new HttpException(400, "You're not userData");
+  // public async logout(userData: string): Promise<User> {
+  //   if (isEmpty(userData)) throw new HttpException(400, "You're not userData");
 
-    const findUser: User = this.users.find(user => user.email === userData.email && user.password === userData.password);
-    if (!findUser) throw new HttpException(409, "You're not user");
+  //   const findUser: User = this.users.find(user => user.email === userData.email && user.password === userData.password);
+  //   if (!findUser) throw new HttpException(409, "You're not user");
 
-    return findUser;
-  }
+  //   return findUser;
+  // }
 
   public createToken(user: string): TokenData {
     const dataStoredInToken: DataStoredInToken = { email:  user};

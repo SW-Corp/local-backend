@@ -16,11 +16,10 @@ const authMiddleware = async (req: RequestWithUser, res: Response, next: NextFun
       const verificationResponse = (await verify(Authorization, secretKey)) as DataStoredInToken;
       console.log(verificationResponse)
       const userEmail = verificationResponse.email;
-      // const findUser = userModel.find(user => user.id === userId);
       const body = {"username": userEmail}
       const response = await fetch(`http://${AUTH_ADDR}:${AUTH_PORT}/usr`, {method: 'POST', body: JSON.stringify(body)});
       if (response.status == 200) {
-        // req.user = findUser;
+        req.user = userEmail;
         next();
       } else {
         next(new HttpException(401, 'Wrong authentication token'));
