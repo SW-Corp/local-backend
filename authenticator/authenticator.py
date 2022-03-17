@@ -2,11 +2,12 @@ import argparse
 import http.server
 import json
 import socketserver
+import bcrypt
 
 
 class ConfigStorage:
     def __init__(self):
-        self.credentialsStore = {"user@email.com": "password"}
+        self.credentialsStore = {"user@email.com": "$2b$12$yOaeOCNaJybzzO7s13W06ur7bY4E82L.JdKJOkxfqHdY1EXT3Brh."}
 
 
 class Auth(http.server.BaseHTTPRequestHandler):
@@ -14,7 +15,13 @@ class Auth(http.server.BaseHTTPRequestHandler):
         self.configStore = configStore
         http.server.BaseHTTPRequestHandler.__init__(self, *args)
 
-    def do_POST(self, ):
+    def do_POST(self):
+        if self.path == "/login":
+            self.login()
+        if self.path == "/usr":
+            self.userExists()
+
+    def login(self):
         content_len = int(self.headers.get("Content-Length"))
         body = self.rfile.read(content_len)
         body = json.loads(body)
@@ -30,12 +37,28 @@ class Auth(http.server.BaseHTTPRequestHandler):
             self.wfile.write(bytes("", "utf-8"))
         return
 
+    def userExists(self): 
+        content_len = int(self.headers.get("Content-Length"))
+        body = self.rfile.read(content_len)
+        body = json.loads(body)
+        if body["username"] in self.configStore.credentialsStore:
+            self.send_response(200)
+            self.send_header("Content-type", "application/json")
+            self.end_headers()
+            self.wfile.write(bytes("", "utf-8"))
+        else:
+            self.send_response(404)
+            self.send_header("Content-type", "application/json")
+            self.end_headers()
+            self.wfile.write(bytes("", "utf-8"))
 
     def validate(self, username, password):
-        try:
-            return self.configStore.credentialsStore[username] == password
+        print(bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()))
+        try: 
+            return bcrypt.checkpw(password.encode('utf-8'), self.configStore.credentialsStore[username].encode('utf-8'))
         except:
             return False
+
 def main(serverPort: int, debugMode: bool) -> None:
 
     assert serverPort > 0 and serverPort < 65535, "Server port not in a valid range!"

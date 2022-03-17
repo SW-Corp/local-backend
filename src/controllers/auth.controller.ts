@@ -3,9 +3,10 @@ import { CreateUserDto } from '@dtos/users.dto';
 import { RequestWithUser } from '@interfaces/auth.interface';
 import { User } from '@interfaces/users.interface';
 import AuthService from '@services/auth.service';
+import { AUTH_ADDR, AUTH_PORT } from '@config';
 
 class AuthController {
-  public authService = new AuthService('localhost', 8000);
+  public authService = new AuthService(AUTH_ADDR, parseInt(AUTH_PORT));
 
 
   public signUp = async (req: Request, res: Response, next: NextFunction): Promise<void> => {

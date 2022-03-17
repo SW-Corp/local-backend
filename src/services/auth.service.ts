@@ -37,8 +37,7 @@ class AuthService{
     console.log(body)
     let response;
     try{
-      console.log(`http://${this.authAddr}:${this.authPort}/`)
-      response = await fetch(`http://swcorp_authenticator:8000/`, {method: 'POST', body: JSON.stringify(body)});
+      response = await fetch(`http://${this.authAddr}:${this.authPort}/login`, {method: 'POST', body: JSON.stringify(body)});
     }
     catch{
       throw new HttpException(500, `Cant connect to authenticator`);
