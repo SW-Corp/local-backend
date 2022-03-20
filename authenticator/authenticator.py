@@ -3,17 +3,22 @@ import http.server
 import json
 import socketserver
 import bcrypt
+from matplotlib import use
+from DBservice import DBService
 
-
-class ConfigStorage:
-    def __init__(self):
-        self.credentialsStore = {"user@email.com": "$2b$12$yOaeOCNaJybzzO7s13W06ur7bY4E82L.JdKJOkxfqHdY1EXT3Brh."}
+# "user@email.com": "$2b$12$yOaeOCNaJybzzO7s13W06ur7bY4E82L.JdKJOkxfqHdY1EXT3Brh."
 
 
 class Auth(http.server.BaseHTTPRequestHandler):
-    def __init__(self, configStore, *args):
-        self.configStore = configStore
+    def __init__(self, *args):
+        self.dbService = DBService()
         http.server.BaseHTTPRequestHandler.__init__(self, *args)
+
+    def respond(self, status, msg):
+        self.send_response(status)
+        self.send_header("Content-type", "application/json")
+        self.end_headers()
+        self.wfile.write(bytes(msg, "utf-8"))
 
     def do_POST(self):
         if self.path == "/login":
@@ -26,47 +31,38 @@ class Auth(http.server.BaseHTTPRequestHandler):
         body = self.rfile.read(content_len)
         body = json.loads(body)
         if self.validate(body["username"], body["password"]):
-            self.send_response(200)
-            self.send_header("Content-type", "application/json")
-            self.end_headers()
-            self.wfile.write(bytes("", "utf-8"))
+            self.respond(200, "")
         else:
-            self.send_response(401)
-            self.send_header("Content-type", "application/json")
-            self.end_headers()
-            self.wfile.write(bytes("", "utf-8"))
+            self.respond(401, "")
         return
 
-    def userExists(self): 
+    def userExists(self):
         content_len = int(self.headers.get("Content-Length"))
         body = self.rfile.read(content_len)
         body = json.loads(body)
-        if body["username"] in self.configStore.credentialsStore:
-            self.send_response(200)
-            self.send_header("Content-type", "application/json")
-            self.end_headers()
-            self.wfile.write(bytes("", "utf-8"))
+        if self.dbService.userExist(body["username"]):
+            self.respond(200, "")
         else:
-            self.send_response(404)
-            self.send_header("Content-type", "application/json")
-            self.end_headers()
-            self.wfile.write(bytes("", "utf-8"))
+            self.respond(404, "No such user")
 
     def validate(self, username, password):
-        print(bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()))
-        try: 
-            return bcrypt.checkpw(password.encode('utf-8'), self.configStore.credentialsStore[username].encode('utf-8'))
-        except:
-            return False
+        # try:
+        hashedPass = self.dbService.getHashedPassword(username)
+        return bcrypt.checkpw(
+            password.encode("utf-8"),
+            hashedPass.encode("utf-8"),
+        )
+        # except:
+        #     return False
+
 
 def main(serverPort: int, debugMode: bool) -> None:
 
     assert serverPort > 0 and serverPort < 65535, "Server port not in a valid range!"
-
-    configStorage = ConfigStorage()  # type: ignore
+    # type: ignore
 
     def handler_object(*args):
-        return Auth(configStorage, *args)
+        return Auth(*args)
 
     sensorConfigServer = socketserver.TCPServer(("", serverPort), handler_object)
 
