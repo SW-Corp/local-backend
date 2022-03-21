@@ -3,8 +3,7 @@ import http.server
 import json
 import socketserver
 import bcrypt
-from matplotlib import use
-from DBservice import DBService
+from dbservice import DBService
 
 # "user@email.com": "$2b$12$yOaeOCNaJybzzO7s13W06ur7bY4E82L.JdKJOkxfqHdY1EXT3Brh."
 
