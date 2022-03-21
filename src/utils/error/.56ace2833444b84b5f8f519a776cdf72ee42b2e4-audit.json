@@ -1,0 +1,15 @@
+{
+    "keep": {
+        "days": false,
+        "amount": 30
+    },
+    "auditLog": "/home/rafal/projects/inzynierka/local-backend/src/utils/error/.56ace2833444b84b5f8f519a776cdf72ee42b2e4-audit.json",
+    "files": [
+        {
+            "date": 1647465767559,
+            "name": "/home/rafal/projects/inzynierka/local-backend/src/utils/error/2022-03-16.log",
+            "hash": "54c2b7223b3039cb9f7203bac38a46a5"
+        }
+    ],
+    "hashType": "md5"
+}
