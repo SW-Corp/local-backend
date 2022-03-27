@@ -6,14 +6,16 @@ import authMiddleware from '@/middlewares/auth.middleware';
 class WorkstationRoute implements Routes {
     public path = '/';
     public router = Router();
-    public stationController = new StationController();
+    public stationController;
   
     constructor() {
+      this.stationController = new StationController();
       this.initializeRoutes();
     }
   
     private initializeRoutes() {
-      this.router.get(`${this.path}/:workstation`, authMiddleware, this.stationController.getWorkstation);
+      this.router.get(`${this.path}workstation/:workstation`, authMiddleware, this.stationController.getWorkstation);
+      // this.router.get(`${this.path}/workstation`, authMiddleware, ()=>{console.log("egh")});
     }
   }
   

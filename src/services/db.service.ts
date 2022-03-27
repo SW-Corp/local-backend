@@ -1,4 +1,5 @@
-import {Pool} from 'pg' 
+const { Pool } = require('pg')
+const client = new Pool()
 
 class DBService{
     private user: string
@@ -6,7 +7,8 @@ class DBService{
     private host: string
     private port: number
     private db: string
-    private pool: Pool
+
+    private pool
     constructor(user: string, password: string, host: string, port: number, db: string){
         this.user = user;
         this.password = password;

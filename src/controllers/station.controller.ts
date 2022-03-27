@@ -3,7 +3,10 @@ import { NextFunction, Request, Response } from 'express';
 
 
 class StationController{
-    private stationService: StationService = new StationService()
+    private stationService: StationService;
+    constructor(){
+      this.stationService = new StationService()
+    }
 
     public getWorkstation = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
         try {
@@ -18,7 +21,7 @@ class StationController{
               res.status(201).json({ data: stationInfo, message: 'station'});
             }
             else{
-              res.status(204).json({ data: "", message: 'No such station'});
+              res.status(404).json({ data: "", message: 'No such station'});
             }
           }
         } catch (error) {
