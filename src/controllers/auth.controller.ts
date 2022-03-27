@@ -8,7 +8,6 @@ import { AUTH_ADDR, AUTH_PORT } from '@config';
 class AuthController {
   public authService = new AuthService(AUTH_ADDR, parseInt(AUTH_PORT));
 
-
   public signUp = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
       const userData: CreateUserDto = req.body;
@@ -44,7 +43,8 @@ class AuthController {
   };
 
   public authTest = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
-    res.status(200).json({message: 'Authorized!' });
+    res.status(200).json({ message: 'Authorized!' });
+    next();
   };
 }
 

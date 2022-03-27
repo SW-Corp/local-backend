@@ -1,4 +1,4 @@
-import { hash, compare } from 'bcrypt';
+import { hash } from 'bcrypt';
 import { sign } from 'jsonwebtoken';
 import { SECRET_KEY } from '@config';
 import { CreateUserDto } from '@dtos/users.dto';
@@ -8,12 +8,14 @@ import { User } from '@interfaces/users.interface';
 import userModel from '@models/users.model';
 import { isEmpty } from '@utils/util';
 import fetch from 'node-fetch';
+import { NODE_ENV } from '@config';
 
-class AuthService{
+const env = NODE_ENV || 'development';
+class AuthService {
   public users = userModel;
   private authAddr: string;
   private authPort: number;
-  constructor(authAddr: string, authPort: number){
+  constructor(authAddr: string, authPort: number) {
     this.authAddr = authAddr;
     this.authPort = authPort;
   }
@@ -32,32 +34,27 @@ class AuthService{
 
   public async login(userData: CreateUserDto): Promise<{ cookie: string; email: string }> {
     if (isEmpty(userData)) throw new HttpException(400, "You're not userData");
-    
-    const body = {"username": userData.email, "password": userData.password}
-    console.log(body)
+
+    const body = { username: userData.email, password: userData.password };
+    console.log(body);
     let response;
-    try{
-      response = await fetch(`http://${this.authAddr}:${this.authPort}/login`, {method: 'POST', body: JSON.stringify(body)});
-    }
-    catch{
+    try {
+      response = await fetch(`http://${this.authAddr}:${this.authPort}/login`, { method: 'POST', body: JSON.stringify(body) });
+    } catch {
       throw new HttpException(500, `Cant connect to authenticator`);
     }
-    
 
-    if (response.status == 401){
+    if (response.status == 401) {
       throw new HttpException(401, `Wrong email or password`);
-    }
-    else if (!response.ok){
+    } else if (!response.ok) {
       throw new HttpException(response.status, response.text());
-    }
-    else{
-      const email: string = userData.email
+    } else {
+      const email: string = userData.email;
       const tokenData = this.createToken(userData.email);
       const cookie = this.createCookie(tokenData);
-  
-      return { cookie, email};
-    }
 
+      return { cookie, email };
+    }
   }
 
   // public async logout(userData: string): Promise<User> {
@@ -70,11 +67,15 @@ class AuthService{
   // }
 
   public createToken(user: string): TokenData {
-    const dataStoredInToken: DataStoredInToken = { email:  user};
+    const dataStoredInToken: DataStoredInToken = { email: user };
     const secretKey: string = SECRET_KEY;
-    const expiresIn: number = 60 * 60;
-
-    return { expiresIn, token: sign(dataStoredInToken, secretKey, { expiresIn }) };
+    if (env == 'development') {
+      const expiresIn: number = 365 * 24 * 60 * 60;
+      return { expiresIn, token: sign(dataStoredInToken, secretKey, { expiresIn }) };
+    } else {
+      const expiresIn: number = 60 * 60;
+      return { expiresIn, token: sign(dataStoredInToken, secretKey, { expiresIn }) };
+    }
   }
 
   public createCookie(tokenData: TokenData): string {
