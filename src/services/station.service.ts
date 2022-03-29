@@ -5,7 +5,8 @@ class StationService {
   private dbService: DBService = new DBService(DB_USER, DB_PASSWORD, DB_HOST, parseInt(DB_PORT), DB);
 
   public getStation = async (name: string) => {
-    const query = `SELECT * FROM Workstations WHERE name='${escape(name)}'`;
+    const query = `SELECT * FROM Workstations WHERE name=${escape(name)}`;
+    console.log(query)
     const result = await this.dbService.runQuery(query);
     return result.rows;
   };

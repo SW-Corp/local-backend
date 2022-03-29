@@ -18,11 +18,11 @@ class DBController:
             database=os.getenv("DB"),
         )
 
-    def execQuery(self, query, params):
+    def execQuery(self, query):
         connection = self.postgreSQL_pool.getconn()
         if connection:
             cursor = connection.cursor()
-            cursor.execute(query, params)
+            cursor.execute(query)
             records = cursor.fetchall()
             cursor.close()
             print("records", records)
@@ -36,17 +36,15 @@ class DBService:
         self.dbController = DBController()
 
     def getHashedPassword(self, email):
-        query = f"SELECT password FROM Users WHERE email='%s'"
-        params = (email)
+        query = f"SELECT password FROM Users WHERE email='{email}'"
         try:
-            return self.dbController.execQuery(query, params)[0][0]
+            return self.dbController.execQuery(query)[0][0]
         except:
             return None
 
     def userExist(self, email):
-        query = f"SELECT COUNT(*) FROM Users WHERE email='%s'"
-        params = (email)
+        query = f"SELECT COUNT(*) FROM Users WHERE email='{email}'"
         try:
-            return self.dbController.execQuery(query, params)[0][0]
+            return self.dbController.execQuery(query)[0][0]
         except:
             return None
