@@ -15,7 +15,6 @@ const authMiddleware = async (req: RequestWithUser, res: Response, next: NextFun
     if (Authorization) {
       const secretKey: string = SECRET_KEY;
       const verificationResponse = (await verify(Authorization, secretKey)) as DataStoredInToken;
-      console.log(verificationResponse);
       const userEmail = verificationResponse.email;
       const body = { username: userEmail };
       const response = await fetch(`http://${AUTH_ADDR}:${AUTH_PORT}/usr`, { method: 'POST', body: JSON.stringify(body) });

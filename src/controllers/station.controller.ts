@@ -3,14 +3,10 @@ import { NextFunction, Request, Response } from 'express';
 
 class StationController {
   private stationService: StationService = new StationService();
-  constructor() {
-    console.log('init');
-  }
 
   public getWorkstation = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
-    console.log('station');
     try {
-      const station = req.params['workstation'];
+      const station: string = req.params['workstation'];
 
       if (!station) {
         res.status(400).json({ message: 'No workstation given' });

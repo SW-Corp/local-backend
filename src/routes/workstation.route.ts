@@ -6,7 +6,7 @@ import authMiddleware from '@/middlewares/auth.middleware';
 class WorkstationRoute implements Routes {
   public path = '/';
   public router = Router();
-  stationController = new StationController();
+  private stationController: StationController = new StationController();
 
   constructor() {
     this.initializeRoutes();
