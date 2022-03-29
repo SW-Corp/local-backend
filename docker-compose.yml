@@ -23,25 +23,28 @@ services:
     volumes:
       - ./:/app
       - /app/node_modules
-    restart: 'unless-stopped'
+    restart: 'always'
     networks:
       - backend
-  # postgres:
-  #   image: postgres
-  #   restart: always
-  #   container_name: swcorp_postgres 
-  #   networks:
-  #     - backend
-  #   environment:
-  #     POSTGRES_USER: 'postgres'
-  #     POSTGRES_PASSWORD: 'postgres'
-  #   ports:
-  #     - '5432:5432'
+
+  postgres:
+    build: ./postgres
+    image: swcorp_postgres_image
+    restart: always
+    container_name: swcorp_postgres 
+    networks:
+      - backend
+    environment:
+      POSTGRES_USER: 'postgres'
+      POSTGRES_PASSWORD: 'postgres'
+    ports:
+      - '5432:5432'
 
   authenticator:
     build: ./authenticator
     image: swcorp/authenticator
     container_name: swcorp_authenticator
+    restart: always
     networks: 
       - backend
     ports:
