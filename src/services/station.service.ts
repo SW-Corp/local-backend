@@ -12,7 +12,7 @@ class StationService {
   };
 
   public getMetrics = async (name: string) => {
-    return name;
+    return this.metricsService.getMetrics();
   };
 }
 

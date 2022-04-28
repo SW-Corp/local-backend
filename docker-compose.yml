@@ -41,9 +41,16 @@ services:
   #     - '5432:5432'
 
   influx:
-    image: influxdb
+    build: ./influx
+    image: swcorp_influx_image
     restart: always
     container_name: swcorp_influx
+    environment:
+      - DOCKER_INFLUXDB_INIT_MODE=setup
+      - DOCKER_INFLUXDB_INIT_USERNAME=USER 
+      - DOCKER_INFLUXDB_INIT_PASSWORD=POSTGRES_PASSWORD
+      - DOCKER_INFLUXDB_INIT_ORG=YOUR-ORG 
+      - DOCKER_INFLUXDB_INIT_BUCKET=YOUR-BUCKET 
     networks:
     - backend
     ports:
