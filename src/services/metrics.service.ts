@@ -1,4 +1,4 @@
-const { InfluxDB, Point } = require("@influxdata/influxdb-client");
+import {InfluxDB, Point } from '@influxdata/influxdb-client'
 
 class MetricsService {
     private address: string;
@@ -27,13 +27,13 @@ class MetricsService {
         writeApi
         .close()
         .then(() => {
-            console.log("FINISHED");
+            return  "FINISHED"
         })
         .catch((e) => {
             console.error(e);
-            console.log("Finished ERROR");
+            return "Finished ERROR"
         });
-
+        return "siema"
     }
 
 }
