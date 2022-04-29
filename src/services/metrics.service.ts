@@ -5,6 +5,7 @@ class MetricsService {
     private port: number;
     private org: string;
     private token: string;
+    private bucket: string = "YOUR-BUCKET"
 
     constructor(address: string, port: number, org: string, token: string){
         this.address = address;
@@ -14,9 +15,32 @@ class MetricsService {
     }
 
     public getMetrics(){
+        const client = new InfluxDB({url: `http://${this.address}:${this.port}`, token: token})
+        const queryApi = client.getQueryApi(org)
 
-        const client = new InfluxDB({ url: `${this.address}:${this.port}`, token: this.token });
-        const writeApi = client.getWriteApi(this.org, "YOUR-BUCKET");
+        const query = flux`from(bucket: "${this.bucket}") 
+        |> range(start: -1d)
+        |> filter(fn: (r) => r._measurement == "weatherstation")`
+        queryApi.queryRows(query, {
+            next(row, tableMeta) {
+                const o = tableMeta.toObject(row)
+                console.log(`${o._time} ${o._measurement}: ${o._field}=${o._value}`)
+            },
+            error(error) {
+                console.error(error)
+                console.log("FINISHED")
+            },
+            complete() {
+                console.log("Finished ERROR")
+            },
+        })
+
+    }
+
+    public pushMetrics(){
+
+        const client = new InfluxDB({ url: `http://${this.address}:${this.port}`, token: this.token });
+        const writeApi = client.getWriteApi(this.org, this.bucket);
         const point = new Point("weatherstation")
         .tag("location", "San Francisco")
         .floatField("temperature", 23.4)
@@ -27,11 +51,11 @@ class MetricsService {
         writeApi
         .close()
         .then(() => {
-            return  "FINISHED"
+           console.log("FINISHED")
         })
         .catch((e) => {
             console.error(e);
-            return "Finished ERROR"
+            console.log("Finished ERROR")
         });
         return "siema"
     }

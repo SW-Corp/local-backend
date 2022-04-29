@@ -11,8 +11,20 @@ class StationService {
     return result.rows;
   };
 
+  // public getMetricsFormat = async (name: string){
+
+  // }
+
+  // public parseMetrics(metrics: json) => {
+    
+  // }
+
   public getMetrics = async (name: string) => {
     return this.metricsService.getMetrics();
+  };
+
+  public pushMetrics = async (name: string) => {
+    return this.metricsService.pushMetrics();
   };
 }
 
