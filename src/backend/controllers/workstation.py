@@ -18,14 +18,17 @@ class WorkstationInfo(BaseModel):
     name: str
     test: str
 
+
 class MetricsData(BaseModel):
     measurement: str
     field: str
     value: float
 
+
 class MetricsList(BaseModel):
     workstation_name: str
     metrics: List[MetricsData]
+
 
 @dataclass
 class WorkstationController:
@@ -41,6 +44,13 @@ class WorkstationController:
         record = response[0]
         return WorkstationInfo(name=record["name"], test=record["test"])
 
+    def getWorkstationsNames(self) -> List[str]:
+        response = self.dbService.run_query(f"SELECT name FROM WORKSTATIONS")
+        if not response:
+            raise WorkstationNotFound
+
+        return response
+
     def pullMetrics(self, station_name: str) -> MetricsData:
         try:
             return self.influxService.read(
@@ -51,6 +61,8 @@ class WorkstationController:
 
     def pushMetrics(self, metricList: MetricsList) -> None:
         try:
-            self.influxService.write(workstation=metricList.workstation_name, metrics=metricList.metrics)
+            self.influxService.write(
+                workstation=metricList.workstation_name, metrics=metricList.metrics
+            )
         except Exception as e:
             logger.error(f"Error writing to influx: {e}")

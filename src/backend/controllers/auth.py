@@ -1,6 +1,7 @@
 import json
 from dataclasses import dataclass
 from http.client import HTTPConnection
+
 import jwt
 
 from ..exceptions import AuthenticatorServiceException, InvalidCredentialsError

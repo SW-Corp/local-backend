@@ -43,8 +43,14 @@ class InfluxService:
         points = []
         for i in metrics:
             print(i.measurement, workstation, i.field, i.value)
-            points.append(Point(i.measurement).tag("workstation", workstation).field(i.field, i.value))
-        self.write_api.write(bucket=HARDCODED_BUCKET, org=self.config.org, record=points)
+            points.append(
+                Point(i.measurement)
+                .tag("workstation", workstation)
+                .field(i.field, i.value)
+            )
+        self.write_api.write(
+            bucket=HARDCODED_BUCKET, org=self.config.org, record=points
+        )
 
     def read(self, query):
         result = self.query_api.query(org=self.config.org, query=query)
