@@ -1,3 +1,1 @@
 FROM influxdb:latest
-
-

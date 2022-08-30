@@ -1,0 +1,25 @@
+type = [timeout, equal, greater, less, greaterequal, lessequal]
+action = [open, close, start, stop]
+
+{
+"tasks": [
+        {
+            "task": {
+                "action": "open",
+                "target": "zawur1 mordo",
+                "value": "100%"
+            },
+            "conditions": {
+                "operator": "and",
+                "conditionlist": [
+                {
+                    "type": "equal",
+                    "metricname": "temperature",
+                    "value": "100"
+                    
+                },
+                ]
+            },
+        },
+    ]
+}

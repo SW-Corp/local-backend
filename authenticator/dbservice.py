@@ -1,7 +1,7 @@
 import os
-from psycopg2 import pool
 
 from dotenv import load_dotenv
+from psycopg2 import pool
 
 load_dotenv()
 

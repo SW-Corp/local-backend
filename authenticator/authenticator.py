@@ -2,6 +2,7 @@ import argparse
 import http.server
 import json
 import socketserver
+
 import bcrypt
 from dbservice import DBService
 
@@ -27,8 +28,10 @@ class Auth(http.server.BaseHTTPRequestHandler):
 
     def login(self):
         content_len = int(self.headers.get("Content-Length"))
+        print(content_len)
         body = self.rfile.read(content_len)
         body = json.loads(body)
+        print(body["username"], body["password"])
         if self.validate(body["username"], body["password"]):
             self.respond(200, "")
         else:
