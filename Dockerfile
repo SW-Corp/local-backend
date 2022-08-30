@@ -1,24 +1,16 @@
-# Common build stage
-FROM node:14.14.0-alpine3.12 as common-build-stage
+FROM python:3.9-alpine
+COPY . /backend
+WORKDIR /backend
 
-COPY . ./app
+RUN mkdir "/backend/venv" && python3 -m venv "/backend/venv"
+RUN apk add libpq-dev libffi-dev gcc musl-dev
 
-WORKDIR /app
+# RUN echo ehhhh 
+# RUN echo $PATH 
 
-RUN npm install
 
-EXPOSE 3000
+ENV PATH="$PATH:/backend/venv/bin"
 
-# Development build stage
-FROM common-build-stage as development-build-stage
+RUN pip install -U pip && pip install -e .
 
-ENV NODE_ENV development
-
-CMD ["npm", "run", "dev"]
-
-# Production build stage
-FROM common-build-stage as production-build-stage
-
-ENV NODE_ENV production
-
-CMD ["npm", "run", "start"]
+ENTRYPOINT ["backend", "-c", "src/backend/config.conf"]

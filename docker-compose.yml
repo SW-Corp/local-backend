@@ -11,17 +11,14 @@ services:
   #   restart: 'unless-stopped'
   #   networks:
   #     - backend
+
   server:
     build:
-      context: ./
-      target: development-build-stage
+      context: .
       dockerfile: Dockerfile
     container_name: server
     ports:
-      - '3000:3000'
-    volumes:
-      - ./:/app
-      - /app/node_modules
+      - '8000:8000'
     restart: 'unless-stopped'
     networks:
       - backend
@@ -36,6 +33,46 @@ services:
     ports:
       - '5432:5432'
 
+
+  postgres:
+    build: ./postgres
+    image: swcorp_postgres_image
+    restart: always
+    container_name: swcorp_postgres 
+    hostname: swcorp_postgres
+    networks:
+      - backend
+    environment:
+      POSTGRES_USER: 'postgres'
+      POSTGRES_PASSWORD: 'postgres'
+    ports:
+      - '5432:5432'
+
+  influx:
+    build: ./influx
+    image: swcorp_influx_image
+    restart: always
+    container_name: swcorp_influx
+    environment:
+      - DOCKER_INFLUXDB_INIT_MODE=setup
+      - DOCKER_INFLUXDB_INIT_USERNAME=INFLUX_USER 
+      - DOCKER_INFLUXDB_INIT_PASSWORD=INFLUX_PASS
+      - DOCKER_INFLUXDB_INIT_ORG=YOUR-ORG 
+      - DOCKER_INFLUXDB_INIT_BUCKET=YOUR-BUCKET 
+      - DOCKER_INFLUXDB_INIT_ADMIN_TOKEN=gigatajnytoken
+    networks:
+    - backend
+    ports:
+      - '8086:8086'
+
+  authenticator:
+    build: ./authenticator
+    image: swcorp/authenticator
+    container_name: swcorp_authenticator
+    networks: 
+      - backend
+    ports:
+      - '8080:8080'
 
 networks:
   backend:
