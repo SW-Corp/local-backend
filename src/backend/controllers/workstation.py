@@ -44,8 +44,8 @@ class WorkstationController:
         record = response[0]
         return WorkstationInfo(name=record["name"], test=record["test"])
 
-    def getWorkstationsNames(self) -> List[str]:
-        response = self.dbService.run_query(f"SELECT name FROM WORKSTATIONS")
+    def getWorkstations(self) -> List[str]:
+        response = self.dbService.run_query(f"SELECT * FROM WORKSTATIONS")
         if not response:
             raise WorkstationNotFound
 
