@@ -18,7 +18,7 @@ CREATE TABLE public.components(
 	component_id int unique not null,
 	name varchar not null,
 	readable_name varchar,
-	type component_kind not null,
+	component_type component_kind not null,
 	workstation varchar not null,
 	foreign key (workstation) references workstations(name)
 );
@@ -35,7 +35,7 @@ INSERT INTO public.users (email,"password")
 INSERT INTO public.workstations (name, description ,connector_address ,connector_port)
 	VALUES ('testworkstation','test', 'localhost', 7000);
 
-INSERT INTO public.components (component_id, name, readable_name, type, workstation)
+INSERT INTO public.components (component_id, name, readable_name, component_type, workstation)
 	VALUES 
 	(0, 'tank1', 'Tank 1', 'tank', 'testworkstation'),
 	(1, 'tank2', 'Tank 2', 'tank', 'testworkstation'),

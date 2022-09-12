@@ -1,5 +1,5 @@
-from dataclasses import dataclass
-from typing import List
+from dataclasses import dataclass, field
+from typing import List, Dict
 
 from pydantic import BaseModel
 
@@ -8,15 +8,12 @@ from backend.services import DBService
 from backend.services.influx_service import InfluxService
 
 from ..utils import get_logger
+from tasks import TasksController
+from workstation_store import MetricType, WorkstationSpecification, WorkstationInfo, Component, ComponentMetric, ComponentType
 
 logger = get_logger("WORKSTATION_CONTROLLER")
 
 HARDCODED_BUCKET = "YOUR-BUCKET"
-
-
-class WorkstationInfo(BaseModel):
-    name: str
-    test: str
 
 
 class MetricsData(BaseModel):
@@ -24,30 +21,85 @@ class MetricsData(BaseModel):
     field: str
     value: float
 
-
 class MetricsList(BaseModel):
     workstation_name: str
     metrics: List[MetricsData]
 
-class ComponentList(BaseModel):
+class MetricTypes(BaseModel):
     pass
 
-class MetricType(BaseModel):
-    pass
+
 
 @dataclass
 class WorkstationController:
     dbService: DBService
     influxService: InfluxService
+    store: Dict[str, WorkstationSpecification] = field(default_factory=dict) # read only
+
+    def __post_init__(self):
+        self.taskController: TasksController()
+
+
+        worstations_query = "SELECT * FROM WORKSTATIONS"
+        components_query = "SELECT * FROM COMPONENTS"
+        metrics_query = "SELECT * FROM COMPONENTS INNER JOIN METRICS on component_type'"
+
+        workstations_response = self.dbService.run_query(worstations_query)
+        components_response = self.dbService.run_query(components_query)
+        metrics_response = self.dbService.run_query(metrics_query)
+
+        workstation_names = map(lambda x: x["name"])
+
+        for workstation_name in workstation_names:
+            metrics: List[ComponentMetric] = []
+            components: List[Component] = []
+            workstation_record = filter(lambda x: x["name"]==workstation_name, workstations_response)
+            component_records = filter(lambda x: x["name"]==workstation_name, components_response)
+            metrics_records = filter(lambda x: x["name"]==workstation_name, metrics_response)
+
+            workstation_info: WorkstationInfo = WorkstationInfo(
+                name=workstation_record["name"],
+                description=workstation_record["description"],
+                connector_address=workstation_record["connecor_address"],
+                connector_port=workstation_record["port"],
+            )
+
+            for component in component_records:
+                components.append(
+                    Component(
+                        component_id=component["component_id"],
+                        name=component["name"],
+                        readable_name=component["readable_name"],
+                        component_type=ComponentType(component["component_type"]),
+                    )
+                )
+            # component is stored in metrics and in components idk its kinda sloppy but its easier thiw way xd
+            for metric in metrics_records:
+                metrics.append(
+                    ComponentMetric(
+                        component = Component(
+                        component_id=metric["component_id"],
+                        name=metric["name"],
+                        readable_name=metric["readable_name"],
+                        component_type=ComponentType(metric["component_type"]),
+                        ),
+                        metric=MetricType(metric["type"])
+                    )
+                )
+
+            self.store[workstation_name] = WorkstationSpecification(
+                info=workstation_info,
+                components=components,
+                metrics=metrics
+            )
+    
 
     def getStation(self, station_name: str) -> WorkstationInfo:
-        response = self.dbService.run_query(
-            f"SELECT name, test FROM WORKSTATIONS WHERE name='{station_name}'"
-        )
-        if not response:
+        try:
+            return self.store[station_name]
+        except Exception:
             raise WorkstationNotFound
-        record = response[0]
-        return WorkstationInfo(name=record["name"], test=record["test"])
+        
 
     def getWorkstations(self) -> List[str]:
         response = self.dbService.run_query(f"SELECT * FROM WORKSTATIONS")
@@ -72,5 +124,8 @@ class WorkstationController:
         except Exception as e:
             logger.error(f"Error writing to influx: {e}")
 
-    def listComponents(self, componentList: ComponentList):
+    def listComponents(self, workstation: str) -> List[Component]:
+        pass
+
+    def listMertics(self, workstation: str) -> MetricsList:
         pass
