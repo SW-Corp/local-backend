@@ -29,6 +29,11 @@ class MetricsList(BaseModel):
     workstation_name: str
     metrics: List[MetricsData]
 
+class ComponentList(BaseModel):
+    pass
+
+class MetricType(BaseModel):
+    pass
 
 @dataclass
 class WorkstationController:
@@ -66,3 +71,6 @@ class WorkstationController:
             )
         except Exception as e:
             logger.error(f"Error writing to influx: {e}")
+
+    def listComponents(self, componentList: ComponentList):
+        pass
