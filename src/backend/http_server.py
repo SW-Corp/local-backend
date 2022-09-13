@@ -68,7 +68,6 @@ class HTTPServer:
                     return JSONResponse(e.detail, 500)
 
             return response
-        print(workstationController.tasksController)
         routers = {
             AuthRouterBuilder(authController),
             WorkstationRouterBuilder(workstationController),

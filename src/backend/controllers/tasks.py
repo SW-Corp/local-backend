@@ -74,7 +74,6 @@ def push_tasks_to_station(queue: Queue[Task], workstationData: WorkstationSpecif
     httpconnection: HTTPConnection = HTTPConnection(
         workstationData.info.connector_address, workstationData.info.connector_port
     )
-    print(workstationData)
     while True:
         task: Task = queue.get()
         logger.debug("Got task from the queue")
@@ -91,7 +90,6 @@ class TasksController:
     taskQueuesStore: Dict[str, Queue[Task]] = field(default_factory=dict)
 
     def __post_init__(self):
-        logger.info("Task controller")
 
         for station in self.workstationsData:
 
@@ -107,7 +105,6 @@ class TasksController:
             self.workstationsData[station] = self.workstationsData[station]
             self.pushingThreads[station] = thread
 
-        logger.info(self.taskQueuesStore, self.workstationsData)
 
     def addTask(self, workstation: str, task: Task):
         try:
