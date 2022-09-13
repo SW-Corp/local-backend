@@ -108,6 +108,7 @@ class TasksController:
 
     def addTask(self, workstation: str, task: Task):
         try:
+            self.validateTask(task)
             self.taskQueuesStore[workstation].put(task)
         except KeyError:
             raise WorkstationNotFound
@@ -117,3 +118,24 @@ class TasksController:
             return list(self.taskQueuesStore[workstation].queue)
         except KeyError:
             raise WorkstationNotFound
+
+    def validateTask(self, task: Task):
+        pass
+        op = task.conditions.operator
+        if op == Operator.OR:
+            while True:
+                conditions_met = False
+                for condition in task.conditions.conditionlist:
+                    if self.check_condition(condition):
+                        conditions_met = True
+                if conditions_met: break
+                
+        if op == Operator.AND:
+            while True:
+                for condition in task.conditions.conditionlist:
+                    if not self.check_condition(condition):
+                        break
+
+
+    def check_condition(self, condition):
+        pass
