@@ -55,14 +55,14 @@ def check_conditions(task: Task):
 
 
 def send_task(httpconnection: HTTPConnection, task: Task):
-    # try:
-    body = task.json()
-    httpconnection.request("POST", "/task", body)
-    response = httpconnection.getresponse()
-    data = response.read()
-    # except Exception as e:
-    #     logger.debug(f"Error sending task {e}")
-    #     return
+    try:
+        body = task.json()
+        httpconnection.request("POST", "/task", body)
+        response = httpconnection.getresponse()
+        data = response.read()
+    except Exception as e:
+        logger.debug(f"Error sending task {e}")
+        return
 
     if response.status == 200:
         logger.debug("Successfully sent a task!")
@@ -129,7 +129,7 @@ class TasksController:
                     if self.check_condition(condition):
                         conditions_met = True
                 if conditions_met: break
-                
+
         if op == Operator.AND:
             while True:
                 for condition in task.conditions.conditionlist:

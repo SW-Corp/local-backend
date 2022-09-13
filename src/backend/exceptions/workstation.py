@@ -8,3 +8,7 @@ class WorkstationException(Exception):
 
 class WorkstationNotFound(WorkstationException):
     pass
+
+@dataclass
+class InvalidMetric(Exception):
+    detail: str

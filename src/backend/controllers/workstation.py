@@ -4,6 +4,7 @@ from typing import List, Dict
 from pydantic import BaseModel
 
 from backend.exceptions import WorkstationNotFound
+from backend.exceptions.workstation import InvalidMetric
 from backend.services import DBService
 from backend.services.influx_service import InfluxService
 
@@ -71,14 +72,16 @@ class WorkstationController:
 
     def pushMetrics(self, metricList: MetricsList) -> None:
         try:
+            for metric in metricList.metrics:
+                # TODO fix this monstrosity of a line 
+                if (metric.field, metric.measurement) not in list(map(lambda x: (x.component.name, x.metric), self.store[metricList.workstation_name].metrics)):
+                    raise InvalidMetric(f"Metric {metric.field}, {metric.measurement} is invalid!")
             self.influxService.write(
                 workstation=metricList.workstation_name, metrics=metricList.metrics
             )
+        except InvalidMetric as e:
+            logger.debug(f"Invalid Metric {e}")
+        
         except Exception as e:
             logger.error(f"Error writing to influx: {e}")
 
-    def listComponents(self, workstation: str) -> List[Component]:
-        pass
-
-    def listMertics(self, workstation: str) -> MetricsList:
-        pass
