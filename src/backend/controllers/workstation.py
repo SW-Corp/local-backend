@@ -66,12 +66,12 @@ class WorkstationController:
                 lambda x: x["name"] == workstation_name, workstations_response
             ))[0]
             component_records = list(filter(
-                lambda x: x["name"] == workstation_name, components_response
+                lambda x: x["workstation"] == workstation_name, components_response
             ))
             metrics_records = list(filter(
-                lambda x: x["name"] == workstation_name, metrics_response
+                lambda x: x["workstation"] == workstation_name, metrics_response
             ))
-
+          
             workstation_info: WorkstationInfo = WorkstationInfo(
                 name=workstation_record["name"],
                 description=workstation_record["description"],
@@ -98,7 +98,7 @@ class WorkstationController:
                             readable_name=metric["readable_name"],
                             component_type=ComponentType(metric["component_type"]),
                         ),
-                        metric=MetricType(metric["type"]),
+                        metric=MetricType(metric["metric_type"]),
                     )
                 )
 
