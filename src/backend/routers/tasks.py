@@ -4,6 +4,7 @@ from ..controllers import Task, TasksController
 from ..controllers.scenario_parser import ScenarioParser
 from ..exceptions import WorkstationNotFound
 
+
 class TasksRouterBuilder:
     def __init__(self, tasksController: TasksController):
         self.tasksController: TasksController = tasksController

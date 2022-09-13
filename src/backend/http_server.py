@@ -4,11 +4,14 @@ from typing import Union
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 
-from .controllers import (AuthConfig, AuthController, TasksController,
-                          WorkstationController)
+from .controllers import (
+    AuthConfig,
+    AuthController,
+    TasksController,
+    WorkstationController,
+)
 from .exceptions import AuthenticatorServiceException, InvalidCredentialsError
-from .routers import (AuthRouterBuilder, TasksRouterBuilder,
-                      WorkstationRouterBuilder)
+from .routers import AuthRouterBuilder, TasksRouterBuilder, WorkstationRouterBuilder
 from .services import DBConfig, DBService, InfluxConfig, InfluxService
 
 
@@ -38,7 +41,6 @@ class HTTPServer:
         workstationController: WorkstationController = WorkstationController(
             dbservice, influx_service
         )
-        tasksController: TasksController = TasksController(workstationController)
 
         @app.middleware("http")
         async def authMiddleware(request: Request, call_next):
@@ -66,11 +68,11 @@ class HTTPServer:
                     return JSONResponse(e.detail, 500)
 
             return response
-
+        print(workstationController.tasksController)
         routers = {
             AuthRouterBuilder(authController),
             WorkstationRouterBuilder(workstationController),
-            TasksRouterBuilder(tasksController),
+            TasksRouterBuilder(workstationController.tasksController),
         }
 
         for router in routers:

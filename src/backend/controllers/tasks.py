@@ -8,12 +8,13 @@ from threading import Thread
 from pydantic import BaseModel
 
 from backend.exceptions.workstation import WorkstationException
+from .workstation_store import WorkstationInfo, WorkstationSpecification
 
 from ..exceptions import WorkstationNotFound
-from .workstation import WorkstationController
 from ..utils import get_logger
 
 logger = get_logger("Tasks controller")
+
 
 class Operator(str, Enum):
     AND = "and"
@@ -40,22 +41,18 @@ class Conditions(BaseModel):
     operator: Operator
     conditionlist: List[Condition]
 
+
 class Task(BaseModel):
     action: str
     target: str
     value: float
     conditions: Conditions
 
-class WorkstationData(BaseModel):
-    name: str
-    test: str
-    address: str
-    port: int
-
 
 def check_conditions(task: Task):
-    #TODO checking conditions
+    # TODO checking conditions
     return True
+
 
 def send_task(httpconnection: HTTPConnection, task: Task):
     # try:
@@ -73,46 +70,44 @@ def send_task(httpconnection: HTTPConnection, task: Task):
         logger.debug("Error sending task")
 
 
-def push_tasks_to_station(queue: Queue[Task], workstationData: WorkstationData):
-    httpconnection: HTTPConnection = HTTPConnection(workstationData.address, workstationData.port)
+def push_tasks_to_station(queue: Queue[Task], workstationData: WorkstationSpecification):
+    httpconnection: HTTPConnection = HTTPConnection(
+        workstationData.info.connector_address, workstationData.info.connector_port
+    )
     print(workstationData)
     while True:
         task: Task = queue.get()
         logger.debug("Got task from the queue")
         if not check_conditions(task):
             return
-            #TODO waiting till conditions are met
+            # TODO waiting till conditions are met
         send_task(httpconnection, task)
-        
 
 
 @dataclass
 class TasksController:
-    workstationController: WorkstationController
-    workstationsData: Dict[str, WorkstationData] = field(default_factory=dict)
+    workstationsData: Dict[str, WorkstationSpecification]
     pushingThreads: Dict[str, Thread] = field(default_factory=dict)
     taskQueuesStore: Dict[str, Queue[Task]] = field(default_factory=dict)
 
     def __post_init__(self):
-        workstations = self.workstationController.getWorkstations()
-        for record in workstations:
-            stationData: WorkstationData = WorkstationData(
-                name=record["name"],
-                test=record["test"],
-                address=record["connector_address"],
-                port=record["connector_port"],
-            )
+        logger.info("Task controller")
+
+        for station in self.workstationsData:
+
             queue = Queue(maxsize=20)
-        
-            thread = Thread(target=push_tasks_to_station, args=(queue, stationData))
+
+            thread = Thread(
+                target=push_tasks_to_station,
+                args=(queue, self.workstationsData[station]),
+            )
             thread.start()
 
-            self.taskQueuesStore[stationData.name] = queue
-            self.workstationsData[stationData.name] = stationData
-            self.pushingThreads[stationData.name] = thread
+            self.taskQueuesStore[station] = queue
+            self.workstationsData[station] = self.workstationsData[station]
+            self.pushingThreads[station] = thread
 
-
-        print(self.taskQueuesStore, self.pushingThreads, self.workstationsData)
+        logger.info(self.taskQueuesStore, self.workstationsData)
 
     def addTask(self, workstation: str, task: Task):
         try:
