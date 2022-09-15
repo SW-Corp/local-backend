@@ -2,6 +2,7 @@ from dataclasses import dataclass, field
 from enum import Enum
 from http.client import HTTPConnection
 from queue import Queue
+import time
 from typing import Dict, List
 from threading import Thread
 
@@ -62,12 +63,14 @@ def send_task(httpconnection: HTTPConnection, task: Task):
         data = response.read()
     except Exception as e:
         logger.debug(f"Error sending task {e}")
+        raise Exception
         return
 
     if response.status == 200:
         logger.debug("Successfully sent a task!")
     else:
-        logger.debug("Error sending task")
+        logger.debug(f"Error sending task: {response}")
+        raise Exception
 
 
 def push_tasks_to_station(queue: Queue[Task], workstationData: WorkstationSpecification):
@@ -80,7 +83,15 @@ def push_tasks_to_station(queue: Queue[Task], workstationData: WorkstationSpecif
         if not check_conditions(task):
             return
             # TODO waiting till conditions are met
-        send_task(httpconnection, task)
+        try:
+            send_task(httpconnection, task)
+        except:
+            time.sleep(1)
+            logger.info("Trying to reconnect to connector")
+            httpconnection = HTTPConnection(
+            workstationData.info.connector_address, workstationData.info.connector_port
+            )
+            
 
 
 @dataclass
@@ -120,21 +131,20 @@ class TasksController:
             raise WorkstationNotFound
 
     def validateTask(self, task: Task):
-        pass
         op = task.conditions.operator
-        if op == Operator.OR:
-            while True:
-                conditions_met = False
-                for condition in task.conditions.conditionlist:
-                    if self.check_condition(condition):
-                        conditions_met = True
-                if conditions_met: break
+        # if op == Operator.OR:
+        #     while True:
+        #         conditions_met = False
+        #         for condition in task.conditions.conditionlist:
+        #             if self.check_condition(condition):
+        #                 conditions_met = True
+        #         if conditions_met: break
 
-        if op == Operator.AND:
-            while True:
-                for condition in task.conditions.conditionlist:
-                    if not self.check_condition(condition):
-                        break
+        # if op == Operator.AND:
+        #     while True:
+        #         for condition in task.conditions.conditionlist:
+        #             if not self.check_condition(condition):
+        #                 break
 
 
     def check_condition(self, condition):
