@@ -5,10 +5,12 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: server
+    container_name: swcorp_server
     ports:
       - '8000:8000'
     restart: 'unless-stopped'
+    extra_hosts:
+      - "connector:host-gateway"  
     networks:
       - backend
 

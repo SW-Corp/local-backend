@@ -33,7 +33,7 @@ INSERT INTO public.users (email,"password")
 	VALUES ('user@email.com','$2b$12$yOaeOCNaJybzzO7s13W06ur7bY4E82L.JdKJOkxfqHdY1EXT3Brh.');
 
 INSERT INTO public.workstations (name, description ,connector_address ,connector_port)
-	VALUES ('testworkstation','test', 'localhost', 7000);
+	VALUES ('testworkstation','test', 'connector', 7000);
 
 INSERT INTO public.components (component_id, name, readable_name, component_type, workstation)
 	VALUES 
