@@ -33,4 +33,4 @@ class Task(BaseModel):
     target: str
     value: float
     ttl: Optional[int]
-    conditions: Conditions
+    conditions: Optional[Conditions]

@@ -97,6 +97,8 @@ def push_tasks_to_station(queue: Queue[Task], workstationData: WorkstationSpecif
 
     def check_conditions(task: Task):
         beginning = time.time()
+        if not task.conditions:
+            return True
         op: Operator = task.conditions.operator
         conditions: List[Condition] = task.conditions.conditionlist
         timeoutCondition = list(filter(lambda x: x.type == ConditionType.TIMEOUT, conditions))
@@ -173,7 +175,6 @@ class TasksController:
 
     def addTask(self, workstation: str, task: Task):
         try:
-            self.validateTask(task)
             self.taskQueuesStore[workstation].put(task)
         except KeyError:
             raise WorkstationNotFound
