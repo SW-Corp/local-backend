@@ -29,7 +29,7 @@ class Component(BaseModel):
 
 
 class ComponentMetric(BaseModel):
-    component: Component
+    component_id: str
     metric: MetricType
 
 
@@ -84,12 +84,7 @@ def init_store(dbService):
         for metric in metrics_records:
             metrics.append(
                 ComponentMetric(
-                    component=Component(
-                        component_id=metric["component_id"],
-                        name=metric["name"],
-                        readable_name=metric["readable_name"],
-                        component_type=ComponentType(metric["component_type"]),
-                    ),
+                    component_id=metric["component_id"],
                     metric=MetricType(metric["metric_type"]),
                 )
             )
