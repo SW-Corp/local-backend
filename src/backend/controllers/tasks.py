@@ -3,13 +3,11 @@ from dataclasses import dataclass, field
 from http.client import HTTPConnection
 from queue import Queue
 import time
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List, Tuple
 from threading import Thread
 from ..services import InfluxService
 from pydantic import BaseModel
-from backend.exceptions.workstation import WorkstationException
-from backend.services import influx_service
-from .workstation_store import WorkstationInfo, WorkstationSpecification
+from .workstation_store import WorkstationSpecification
 
 from ..exceptions import WorkstationNotFound
 from ..utils import get_logger
@@ -137,7 +135,6 @@ def push_tasks_to_station(queue: Queue[Task], workstationData: WorkstationSpecif
         if not check_conditions(task):
             logger.debug("contitions not met")
             continue
-            
     
         try:
             send_task(httpconnection, task)
@@ -186,25 +183,3 @@ class TasksController:
             return list(self.taskQueuesStore[workstation].queue)
         except KeyError:
             raise WorkstationNotFound
-
-    def validateTask(self, task: Task):
-
-        pass
-
-        # if op == Operator.OR:
-        #     while True:
-        #         conditions_met = False
-        #         for condition in task.conditions.conditionlist:
-        #             if self.check_condition(condition):
-        #                 conditions_met = True
-        #         if conditions_met: break
-
-        # if op == Operator.AND:
-        #     while True:
-        #         for condition in task.conditions.conditionlist:
-        #             if not self.check_condition(condition):
-        #                 break
-
-
-
-        
