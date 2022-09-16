@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from typing import List
 
 from ..exceptions.task import ErrorParsingTask
-from .tasks import Condition, Conditions, ConditionType, Operator, Task
+from .task_models import Condition, Conditions, ConditionType, Operator, Task
 import os
 
 

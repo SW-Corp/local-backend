@@ -29,7 +29,7 @@ class Component(BaseModel):
 
 
 class ComponentMetric(BaseModel):
-    component_id: str
+    component_id: int
     metric: MetricType
 
 
