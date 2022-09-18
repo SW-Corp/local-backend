@@ -1,10 +1,10 @@
 import json
+import os
 from dataclasses import dataclass
 from typing import List
 
 from ..exceptions.task import ErrorParsingTask
 from .task_models import Condition, Conditions, ConditionType, Operator, Task
-import os
 
 
 @dataclass

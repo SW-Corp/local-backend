@@ -1,5 +1,8 @@
-from fastapi import APIRouter, HTTPException
 from typing import List
+
+from fastapi import APIRouter, HTTPException
+from fastapi.responses import JSONResponse
+
 from ..controllers import Task, TasksController
 from ..controllers.scenario_parser import ScenarioParser
 from ..exceptions import WorkstationNotFound
@@ -20,12 +23,20 @@ class TasksRouterBuilder:
             except WorkstationNotFound:
                 raise HTTPException(404, "Workstation not found")
 
+        @router.post("/task/flush/{workstation}")
+        async def clearTasks(workstation: str):
+            try:
+                self.tasksController.flushQueue(workstation)
+            except WorkstationNotFound:
+                raise HTTPException(404, "Workstation not found")
+
         @router.post("/task/{workstation}")
         async def addTask(workstation: str, task: Task):
             try:
-                return self.tasksController.addTask(workstation, task)
+                self.tasksController.addTask(workstation, task)
             except WorkstationNotFound:
                 raise HTTPException(404, "Workstation not found")
+            return JSONResponse(content="Added task to the queue!")
 
         @router.post("/scenario/{workstation}/{scenario_name}")
         async def playScenario(workstation: str, scenario_name: str):

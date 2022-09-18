@@ -1,4 +1,5 @@
-from .auth import AuthenticatorServiceException, AuthException, InvalidCredentialsError
+from .auth import (AuthenticatorServiceException, AuthException,
+                   InvalidCredentialsError)
 from .workstation import WorkstationNotFound
 
 __all__ = [

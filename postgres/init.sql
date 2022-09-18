@@ -44,7 +44,7 @@ INSERT INTO public.components (component_id, name, display_name, component_type,
 	(2, 'valve2', 'Valve 2', 'valve', 'testworkstation'),
 	(3, 'valve2', 'Valve 2', 'valve', 'testworkstation');
 
-INSERT INTO public.metrics (metric_type, component_type)
+INSERT INTO public.metrics (id, metric_type, component_type)
 	VALUES
 	(0, 'water_level', 'tank'),
 	(1, 'is_open', 'valve');

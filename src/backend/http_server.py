@@ -2,17 +2,14 @@ from dataclasses import dataclass
 from typing import Union
 
 from fastapi import FastAPI, Request
-from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 
-from .controllers import (
-    AuthConfig,
-    AuthController,
-    TasksController,
-    WorkstationController,
-)
+from .controllers import (AuthConfig, AuthController, TasksController,
+                          WorkstationController)
 from .exceptions import AuthenticatorServiceException, InvalidCredentialsError
-from .routers import AuthRouterBuilder, TasksRouterBuilder, WorkstationRouterBuilder
+from .routers import (AuthRouterBuilder, TasksRouterBuilder,
+                      WorkstationRouterBuilder)
 from .services import DBConfig, DBService, InfluxConfig, InfluxService
 
 
@@ -77,6 +74,7 @@ class HTTPServer:
                     return JSONResponse(e.detail, 500)
 
             return response
+
         routers = {
             AuthRouterBuilder(authController),
             WorkstationRouterBuilder(workstationController),

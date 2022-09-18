@@ -1,6 +1,7 @@
 from enum import Enum
-from pydantic import BaseModel
 from typing import Dict, List
+
+from pydantic import BaseModel
 
 
 class MetricType(str, Enum):
@@ -39,6 +40,7 @@ class WorkstationSpecification(BaseModel):
     components: List[Component]
     metrics: List[ComponentMetric]
 
+
 def init_store(dbService):
     store = {}
     worstations_query = "SELECT * FROM WORKSTATIONS"
@@ -50,21 +52,20 @@ def init_store(dbService):
     metrics_response = dbService.run_query(metrics_query)
 
     workstation_names = list(map(lambda x: x["name"], workstations_response))
-    
 
     for workstation_name in workstation_names:
         metrics: List[ComponentMetric] = []
         components: List[Component] = []
-        workstation_record = list(filter(
-            lambda x: x["name"] == workstation_name, workstations_response
-        ))[0]
-        component_records = list(filter(
-            lambda x: x["workstation"] == workstation_name, components_response
-        ))
-        metrics_records = list(filter(
-            lambda x: x["workstation"] == workstation_name, metrics_response
-        ))
-        
+        workstation_record = list(
+            filter(lambda x: x["name"] == workstation_name, workstations_response)
+        )[0]
+        component_records = list(
+            filter(lambda x: x["workstation"] == workstation_name, components_response)
+        )
+        metrics_records = list(
+            filter(lambda x: x["workstation"] == workstation_name, metrics_response)
+        )
+
         workstation_info: WorkstationInfo = WorkstationInfo(
             name=workstation_record["name"],
             display_name=workstation_record["display_name"],
@@ -95,4 +96,4 @@ def init_store(dbService):
             info=workstation_info, components=components, metrics=metrics
         )
 
-    return store    
+    return store
