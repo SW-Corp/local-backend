@@ -3,14 +3,17 @@ from typing import Union
 
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
+from fastapi.middleware.cors import CORSMiddleware
 
-from backend.services import influx_service
-
-from .controllers import AuthConfig, AuthController, WorkstationController
+from .controllers import (
+    AuthConfig,
+    AuthController,
+    TasksController,
+    WorkstationController,
+)
 from .exceptions import AuthenticatorServiceException, InvalidCredentialsError
-from .routers import AuthRouterBuilder, WorkstationRouterBuilder
-from .services.db_service import DBConfig, DBService
-from .services.influx_service import InfluxConfig, InfluxService
+from .routers import AuthRouterBuilder, TasksRouterBuilder, WorkstationRouterBuilder
+from .services import DBConfig, DBService, InfluxConfig, InfluxService
 
 
 @dataclass
@@ -35,10 +38,17 @@ class HTTPServer:
         app = FastAPI(title="HTTP keyserver", version="0.1")
         dbservice: DBService = DBService(self.dbconfig)
         influx_service: InfluxService = InfluxService(self.influxconfig)
-
         authController: AuthController = AuthController(self.authconfig)
         workstationController: WorkstationController = WorkstationController(
             dbservice, influx_service
+        )
+
+        app.add_middleware(
+            CORSMiddleware,
+            allow_origins=["*"],
+            allow_credentials=True,
+            allow_methods=["*"],
+            allow_headers=["*"],
         )
 
         @app.middleware("http")
@@ -67,10 +77,10 @@ class HTTPServer:
                     return JSONResponse(e.detail, 500)
 
             return response
-
         routers = {
             AuthRouterBuilder(authController),
             WorkstationRouterBuilder(workstationController),
+            TasksRouterBuilder(workstationController.tasksController),
         }
 
         for router in routers:
