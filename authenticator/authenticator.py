@@ -25,6 +25,22 @@ class Auth(http.server.BaseHTTPRequestHandler):
             self.login()
         if self.path == "/usr":
             self.userExists()
+        if self.path == "/signup":
+            self.signup()
+
+    def signup(self):
+        content_len = int(self.headers.get("Content-Length"))
+        print(content_len)
+        body = self.rfile.read(content_len)
+        body = json.loads(body)
+        print(body["username"], body["password"])
+        username, password = (body["username"], body["password"])
+        password = bcrypt.hashpw(password.encode(), bcrypt.gensalt())
+        try:
+            self.dbService.signup(username, password.decode("utf-8"))
+            self.respond(200, "")
+        except Exception as e:
+            self.respond(500, f"{e}")
 
     def login(self):
         content_len = int(self.headers.get("Content-Length"))
@@ -50,12 +66,13 @@ class Auth(http.server.BaseHTTPRequestHandler):
     def validate(self, username, password):
         # try:
         hashedPass = self.dbService.getHashedPassword(username)
-        return bcrypt.checkpw(
-            password.encode("utf-8"),
-            hashedPass.encode("utf-8"),
-        )
-        # except:
-        #     return False
+        try:
+            return bcrypt.checkpw(
+                password.encode("utf-8"),
+                hashedPass.encode("utf-8"),
+            )
+        except:
+            return False
 
 
 def main(serverPort: int, debugMode: bool) -> None:

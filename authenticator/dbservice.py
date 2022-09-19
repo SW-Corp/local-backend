@@ -25,8 +25,20 @@ class DBController:
             cursor.execute(query)
             records = cursor.fetchall()
             cursor.close()
+            connection.close()
             print("records", records)
             return records
+        else:
+            raise Exception
+
+    def run_query_insert(self, query: str):
+        connection = self.postgreSQL_pool.getconn()
+        if connection:
+            cursor = connection.cursor()
+            cursor.execute(query)
+            connection.commit()
+            cursor.close()
+            connection.close()
         else:
             raise Exception
 
@@ -48,3 +60,6 @@ class DBService:
             return self.dbController.execQuery(query)[0][0]
         except:
             return None
+
+    def signup(self, email, password):
+        self.dbController.run_query_insert(f"INSERT INTO USERS (email, password) VALUES ('{email}', '{password}')")

@@ -45,6 +45,7 @@ class DBService:
             cursor.execute(query)
             records = cursor.fetchall()
             cursor.close()
+            connection.close()
             return records
         else:
             raise Exception

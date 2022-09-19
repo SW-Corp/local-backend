@@ -4,6 +4,8 @@ from http.client import HTTPConnection
 
 import jwt
 
+from ..services import DBService
+
 from ..exceptions import AuthenticatorServiceException, InvalidCredentialsError
 
 
@@ -19,6 +21,7 @@ class AuthConfig:
 @dataclass
 class AuthController:
     config: AuthConfig
+    dbService: DBService
 
     def generateCookie(self, username: str) -> str:
         username_jwt = jwt.encode(
@@ -40,9 +43,18 @@ class AuthController:
         if response.status == 401:
             raise InvalidCredentialsError()
         else:
-            return AuthenticatorServiceException(
+            raise AuthenticatorServiceException(
                 f"{response.status} f{response.read()}: "
             )
+
+    def signup(self, username: str, password: str):
+        try:
+            body = {"username": username, "password": password}
+            response = self.call_authenticator("POST", "/signup", body)
+
+        except Exception as e:
+            raise AuthenticatorServiceException(f"Error signing up: {e}")
+
 
     def login(self, username: str, password: str):
         body = {"username": username, "password": password}

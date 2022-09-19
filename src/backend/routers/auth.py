@@ -1,7 +1,9 @@
 from typing import Union
 
-from fastapi import APIRouter, Cookie, Response
+from fastapi import APIRouter, Cookie, Response, HTTPException
 from pydantic import BaseModel
+
+from backend.exceptions.auth import InvalidCredentialsError
 
 from ..controllers import AuthController
 
@@ -24,8 +26,12 @@ class AuthRouterBuilder:
         router = APIRouter()
 
         @router.post("/signup")
-        async def signup():
-            pass
+        async def signup(loginData: LoginBody):
+            try:
+                self.authController.signup(loginData.email, loginData.password)
+            except Exception as e:
+                return HTTPException(500, e)
+            
 
         @router.post("/login", response_model=LoginResponse)
         async def login(
@@ -34,9 +40,14 @@ class AuthRouterBuilder:
             Authorization: Union[str, None] = Cookie(default=None),
         ):
             print(Authorization)
-            cookie = self.authController.login(loginData.email, loginData.password)
-            response.headers["Set-Cookie"] = cookie
+            try:
+                cookie = self.authController.login(loginData.email, loginData.password)
+                response.headers["Set-Cookie"] = cookie
+            except InvalidCredentialsError:
+                raise HTTPException(401, "Invalid credentials")  
+
             return LoginResponse(email=loginData.email, message="login")
+
 
         @router.get("/logout")
         async def logout(response: Response):

@@ -35,10 +35,11 @@ class HTTPServer:
         app = FastAPI(title="HTTP keyserver", version="0.1")
         dbservice: DBService = DBService(self.dbconfig)
         influx_service: InfluxService = InfluxService(self.influxconfig)
-        authController: AuthController = AuthController(self.authconfig)
         workstationController: WorkstationController = WorkstationController(
             dbservice, influx_service
         )
+        authController: AuthController = AuthController(self.authconfig, dbservice)
+
 
         app.add_middleware(
             CORSMiddleware,
