@@ -18,6 +18,12 @@ class ConditionType(str, Enum):
     LESSEQUAL = "lessequal"
 
 
+class TaskStatus(str, Enum):
+    SUCCESS = "success"
+    CONDITIONS_NOT_MET = "conditions_not_met"
+    CONNECTOR_ERROR = "connector_error"
+
+
 class Condition(BaseModel):
     type: ConditionType
     measurement: str
@@ -36,3 +42,8 @@ class Task(BaseModel):
     value: float
     ttl: Optional[int]
     conditions: Optional[Conditions]
+
+
+class TaskNotification(BaseModel):
+    status: TaskStatus
+    task: Task

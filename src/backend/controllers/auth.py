@@ -4,9 +4,8 @@ from http.client import HTTPConnection
 
 import jwt
 
-from ..services import DBService
-
 from ..exceptions import AuthenticatorServiceException, InvalidCredentialsError
+from ..services import DBService
 
 
 @dataclass
@@ -50,15 +49,14 @@ class AuthController:
     def signup(self, username: str, password: str):
         try:
             body = {"username": username, "password": password}
-            response = self.call_authenticator("POST", "/signup", body)
+            self.call_authenticator("POST", "/signup", body)
 
         except Exception as e:
             raise AuthenticatorServiceException(f"Error signing up: {e}")
 
-
     def login(self, username: str, password: str):
         body = {"username": username, "password": password}
-        response = self.call_authenticator("POST", "/login", body)
+        self.call_authenticator("POST", "/login", body)
 
         return self.generateCookie(username)
 
@@ -68,9 +66,9 @@ class AuthController:
                 cookie, self.config.secret_key, algorithms=["HS256"]
             )
             body = {"username": cookie_content["username"]}
-        except:
+        except Exception:
             raise InvalidCredentialsError("Cookie invalid or missing")
 
-        response = self.call_authenticator("POST", "/usr", body)
+        self.call_authenticator("POST", "/usr", body)
 
         return True

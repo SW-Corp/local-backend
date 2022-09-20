@@ -1,4 +1,3 @@
-from asyncio.log import logger
 from dataclasses import dataclass
 
 from influxdb_client import InfluxDBClient, Point

@@ -1,23 +1,15 @@
 from dataclasses import dataclass
-from typing import Union
 
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, Request, WebSocket
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
-from .controllers import (AuthConfig, AuthController, TasksController,
-                          WorkstationController)
+from .controllers import AuthConfig, AuthController, WorkstationController
 from .exceptions import AuthenticatorServiceException, InvalidCredentialsError
 from .routers import (AuthRouterBuilder, TasksRouterBuilder,
                       WorkstationRouterBuilder)
-from .services import DBConfig, DBService, InfluxConfig, InfluxService
-
-
-@dataclass
-class APIConfig:
-    addr: str
-    port: int
-
+from .services import (DBConfig, DBService, InfluxConfig, InfluxService,
+                       NotificationsService)
 
 NOT_SECURED_PATHS = [
     "/login",
@@ -35,11 +27,11 @@ class HTTPServer:
         app = FastAPI(title="HTTP keyserver", version="0.1")
         dbservice: DBService = DBService(self.dbconfig)
         influx_service: InfluxService = InfluxService(self.influxconfig)
+        notificationsService: NotificationsService = NotificationsService()
         workstationController: WorkstationController = WorkstationController(
-            dbservice, influx_service
+            dbservice, influx_service, notificationsService
         )
         authController: AuthController = AuthController(self.authconfig, dbservice)
-
 
         app.add_middleware(
             CORSMiddleware,
@@ -85,8 +77,9 @@ class HTTPServer:
         for router in routers:
             app.include_router(router.build())
 
-        @app.get("/authtest")
-        async def dbtest():
-            return "authorized"
+        @app.websocket("/ws")
+        async def handle_websocket(websocket: WebSocket):
+            await websocket.accept()
+            await notificationsService.connect(websocket)
 
         return app

@@ -1,10 +1,11 @@
-import time
 from dataclasses import dataclass, field
 from queue import Queue
 from threading import Thread
-from typing import Dict, List, Tuple
+from typing import Dict, List
 
 from pydantic import BaseModel
+
+from backend.services.notifications_service import NotificationsService
 
 from ..exceptions import WorkstationNotFound
 from ..services import InfluxService
@@ -28,6 +29,7 @@ class MetricsData(BaseModel):
 class TasksController:
     workstationsData: Dict[str, WorkstationSpecification]
     influx_service: InfluxService
+    notificationsService: NotificationsService
     abort_task_signals: Dict[str, ClearQueueSignal] = field(default_factory=dict)
     pushingThreads: Dict[str, Thread] = field(default_factory=dict)
     taskQueuesStore: Dict[str, Queue[Task]] = field(default_factory=dict)
@@ -43,6 +45,7 @@ class TasksController:
                 self.workstationsData[station],
                 self.influx_service,
                 self.abort_task_signals[station],
+                self.notificationsService,
             )
             thread.start()
 

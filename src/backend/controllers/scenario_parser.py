@@ -1,5 +1,5 @@
 import json
-import os
+from asyncio.log import logger
 from dataclasses import dataclass
 from typing import List
 
@@ -15,6 +15,7 @@ class ScenarioParser:
                 data = json.load(file)
                 return self.parse_from_json(data["tasks"])
             except KeyError as e:
+                logger.error(f"Error parsing task {e}")
                 raise ErrorParsingTask
 
     def parse_from_json(self, data: list) -> List[Task]:

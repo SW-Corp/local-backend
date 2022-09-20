@@ -1,3 +1,4 @@
+import asyncio
 import time
 from dataclasses import dataclass
 from http.client import HTTPConnection
@@ -5,9 +6,12 @@ from queue import Queue
 from threading import Thread
 from typing import Dict, List, Tuple
 
+from backend.services.notifications_service import NotificationsService
+
 from ..services import InfluxService
 from ..utils import get_logger
-from .task_models import Condition, ConditionType, Operator, Task
+from .task_models import (Condition, ConditionType, Operator, Task,
+                          TaskNotification, TaskStatus)
 from .workstation_store import WorkstationSpecification
 
 logger = get_logger("Task pusher")
@@ -22,6 +26,7 @@ compare_func = {
     ConditionType.MOREEQUAL: lambda x, y: x >= y,
     ConditionType.LESSEQUAL: lambda x, y: x <= y,
 }
+
 
 # custom variable used for clearing queue and aborting currnent task
 @dataclass
@@ -47,13 +52,25 @@ class ClearQueueSignal:
 
 
 class TaskPusherThread(Thread):
-    def __init__(self, queue, workstationData, influx_service, abort_task):
+    def __init__(
+        self, queue, workstationData, influx_service, abort_task, notificationsService
+    ):
         super(TaskPusherThread, self).__init__()
         self.queue: Queue[Task] = queue
         self.workstationData: WorkstationSpecification = workstationData
         self.influx_service: InfluxService = influx_service
         self.abort_task: ClearQueueSignal = abort_task
+        self.notificationsService: NotificationsService = notificationsService
         self.processing_task: bool = False
+        self.loop = asyncio.new_event_loop()
+
+    def sendNotification(self, status: TaskStatus, task: Task):
+        self.loop.run_until_complete(
+            self.notificationsService.broadcast_notification(
+                self.workstationData.info.name,
+                TaskNotification(status=TaskStatus(status), task=task),
+            )
+        )
 
     def run(self):
         httpconnection: HTTPConnection = HTTPConnection(
@@ -65,13 +82,16 @@ class TaskPusherThread(Thread):
             self.processing_task = True
             logger.debug("Got task from the queue")
             if not self.check_conditions(task):
+                self.sendNotification(TaskStatus.CONDITIONS_NOT_MET, task)
                 logger.debug("contitions not met")
                 continue
 
             try:
                 self.processing_task = False
                 self.send_task(httpconnection, task)
-            except:
+                self.sendNotification(TaskStatus.SUCCESS, task)
+            except Exception:
+                self.sendNotification(TaskStatus.CONNECTOR_ERROR, task)
                 time.sleep(1)
                 logger.info("Trying to reconnect to connector")
                 httpconnection = HTTPConnection(
@@ -101,7 +121,6 @@ class TaskPusherThread(Thread):
         metric_dict: Dict[Tuple[str, str], float],
     ):
         if op == Operator.OR:
-            conditions_met = False
             for condition in conditions:
                 # ignoring timeout conditions, they are handled earlier
                 if condition.type == ConditionType.TIMEOUT:
@@ -127,7 +146,6 @@ class TaskPusherThread(Thread):
         beginning = time.time()
         if not task.conditions:
             return True
-        op: Operator = task.conditions.operator
         conditions: List[Condition] = task.conditions.conditionlist
         timeoutCondition = list(
             filter(lambda x: x.type == ConditionType.TIMEOUT, conditions)
@@ -163,7 +181,7 @@ class TaskPusherThread(Thread):
                 ):
                     return True
             except KeyError as e:
-                logger.error("Task condition is invalid, metric doesn't exist")
+                logger.error(f"Task condition is invalid, metric doesn't exist {e}")
                 return False
             time.sleep(1)
 
@@ -174,11 +192,10 @@ class TaskPusherThread(Thread):
             body = task.json()
             httpconnection.request("POST", "/task", body)
             response = httpconnection.getresponse()
-            data = response.read()
+            response.read()
         except Exception as e:
             logger.debug(f"Error sending task {e}")
             raise Exception
-            return
 
         if response.status == 200:
             logger.debug("Successfully sent a task!")

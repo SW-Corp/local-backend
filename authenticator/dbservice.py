@@ -51,15 +51,17 @@ class DBService:
         query = f"SELECT password FROM Users WHERE email='{email}'"
         try:
             return self.dbController.execQuery(query)[0][0]
-        except:
+        except Exception:
             return None
 
     def userExist(self, email):
         query = f"SELECT COUNT(*) FROM Users WHERE email='{email}'"
         try:
             return self.dbController.execQuery(query)[0][0]
-        except:
+        except Exception:
             return None
 
     def signup(self, email, password):
-        self.dbController.run_query_insert(f"INSERT INTO USERS (email, password) VALUES ('{email}', '{password}')")
+        self.dbController.run_query_insert(
+            f"INSERT INTO USERS (email, password) VALUES ('{email}', '{password}')"
+        )

@@ -20,6 +20,10 @@ class WorkstationRouterBuilder:
             return stationData
             pass
 
+        @router.get("/workstations")
+        async def getWorstations():
+            return self.worstationController.getWorkstations()
+
         @router.post("/metrics")
         async def pushMetrics(metricsList: MetricsList):
             self.worstationController.pushMetrics(metricsList)

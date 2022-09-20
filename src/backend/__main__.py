@@ -1,10 +1,8 @@
-from re import I
-
 import configargparse
 import uvicorn
 
 from .controllers import AuthConfig
-from .http_server import APIConfig, HTTPServer
+from .http_server import HTTPServer
 from .services.db_service import DBConfig
 from .services.influx_service import InfluxConfig
 
@@ -132,11 +130,6 @@ def main():
     )
 
     args, _ = parser.parse_known_args()
-
-    api_config = APIConfig(
-        addr=args.address,
-        port=args.port,
-    )
 
     auth_config = AuthConfig(
         port=args.auth_port,

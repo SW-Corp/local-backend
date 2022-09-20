@@ -71,7 +71,7 @@ class Auth(http.server.BaseHTTPRequestHandler):
                 password.encode("utf-8"),
                 hashedPass.encode("utf-8"),
             )
-        except:
+        except Exception:
             return False
 
 

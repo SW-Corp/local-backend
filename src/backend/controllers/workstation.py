@@ -7,11 +7,12 @@ from backend.exceptions import WorkstationNotFound
 from backend.exceptions.workstation import InvalidMetric
 from backend.services import DBService
 from backend.services.influx_service import InfluxService
+from backend.services.notifications_service import NotificationsService
 
 from ..utils import get_logger
 from .tasks import TasksController
-from .workstation_store import (Component, WorkstationInfo,
-                                WorkstationSpecification, init_store)
+from .workstation_store import (WorkstationInfo, WorkstationSpecification,
+                                init_store)
 
 logger = get_logger("WORKSTATION_CONTROLLER")
 
@@ -37,6 +38,7 @@ class MetricTypes(BaseModel):
 class WorkstationController:
     dbService: DBService
     influxService: InfluxService
+    notificationService: NotificationsService
     store: Dict[str, WorkstationSpecification] = field(
         default_factory=dict
     )  # read only
@@ -44,7 +46,10 @@ class WorkstationController:
 
     def __post_init__(self):
         self.store = init_store(self.dbService)
-        self.tasksController = TasksController(self.store, self.influxService)
+        self.notificationService.init_service(list(self.store.keys()))
+        self.tasksController = TasksController(
+            self.store, self.influxService, self.notificationService
+        )
 
     def getStation(self, station_name: str) -> WorkstationInfo:
         try:
@@ -53,11 +58,7 @@ class WorkstationController:
             raise WorkstationNotFound
 
     def getWorkstations(self) -> List[str]:
-        response = self.dbService.run_query(f"SELECT * FROM WORKSTATIONS")
-        if not response:
-            raise WorkstationNotFound
-
-        return response
+        return list(self.store.keys())
 
     def pullMetrics(self, station_name: str) -> MetricsData:
         try:
@@ -85,12 +86,6 @@ class WorkstationController:
 
     def validate_metric(self, metric: MetricsData, workstationName: str):
         def get_component_name(id):
-            component = list(
-                filter(
-                    lambda x: x.component_id == id,
-                    self.store[workstationName].components,
-                )
-            )
             return list(
                 filter(
                     lambda x: x.component_id == id,
