@@ -1,11 +1,31 @@
 import json
 from dataclasses import dataclass
+from enum import Enum
 from http.client import HTTPConnection
+from typing import List
 
 import jwt
+from pydantic import BaseModel
+
+from backend.exceptions.auth import InsufficientPermission
 
 from ..exceptions import AuthenticatorServiceException, InvalidCredentialsError
 from ..services import DBService
+
+
+class PermissionType(str, Enum):
+    READ = "read"
+    WRITE = "write"
+    MANAGE_USERS = "manage_users"
+
+
+class Permission(BaseModel):
+    user: str
+    permission: PermissionType
+
+
+class UserList(BaseModel):
+    users: List[Permission]
 
 
 @dataclass
@@ -40,10 +60,12 @@ class AuthController:
         if response.status == 200:
             return response.read().decode()
         if response.status == 401:
-            raise InvalidCredentialsError()
+            raise InvalidCredentialsError("Invalid credentials")
+        if response.status == 403:
+            raise InsufficientPermission("Insufficient permission")
         else:
             raise AuthenticatorServiceException(
-                f"{response.status} f{response.read()}: "
+                f"{response.status} {response.read().decode()}: "
             )
 
     def signup(self, username: str, password: str):
@@ -60,15 +82,33 @@ class AuthController:
 
         return self.generateCookie(username)
 
-    def validate(self, cookie: str) -> bool:
+    def validate(self, cookie: str, permission) -> bool:
         try:
             cookie_content = jwt.decode(
                 cookie, self.config.secret_key, algorithms=["HS256"]
             )
-            body = {"username": cookie_content["username"]}
+            body = {"username": cookie_content["username"], "permission": permission}
         except Exception:
             raise InvalidCredentialsError("Cookie invalid or missing")
 
-        self.call_authenticator("POST", "/usr", body)
+        self.call_authenticator("POST", "/permission", body)
 
         return True
+
+    def add_permission(self, permission: Permission):
+        query = f"UPDATE USERS SET permission = '{permission.permission}' WHERE email = '{permission.user}'"
+        self.dbService.run_query_insert(query)
+
+    def get_users(self) -> UserList:
+        query = 'SELECT "email", "permission" FROM USERS'
+        records = self.dbService.run_query(query)
+        print("records")
+        users = list(
+            map(
+                lambda x: Permission(
+                    user=x["email"], permission=PermissionType(x["permission"])
+                ),
+                records,
+            )
+        )
+        return UserList(users=users)

@@ -49,3 +49,14 @@ class DBService:
             return records
         else:
             raise Exception
+
+    def run_query_insert(self, query: str):
+        connection = self.pool.getconn()
+        if connection:
+            cursor = connection.cursor()
+            cursor.execute(query)
+            connection.commit()
+            cursor.close()
+            connection.close()
+        else:
+            raise Exception

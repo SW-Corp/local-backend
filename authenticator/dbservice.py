@@ -26,7 +26,6 @@ class DBController:
             records = cursor.fetchall()
             cursor.close()
             connection.close()
-            print("records", records)
             return records
         else:
             raise Exception
@@ -54,14 +53,26 @@ class DBService:
         except Exception:
             return None
 
-    def userExist(self, email):
-        query = f"SELECT COUNT(*) FROM Users WHERE email='{email}'"
+    def checkPermission(self, email, permission):
+        permission_levels = {
+            "read": ["read"],
+            "write": ["read", "write"],
+            "manage_users": ["read", "write", "manage_users"],
+        }
+        query = f"SELECT permission FROM Users WHERE email='{email}'"
+
         try:
-            return self.dbController.execQuery(query)[0][0]
+            if (
+                permission
+                in permission_levels[self.dbController.execQuery(query)[0][0]]
+            ):
+                return True
+            else:
+                return False
         except Exception:
-            return None
+            return False
 
     def signup(self, email, password):
         self.dbController.run_query_insert(
-            f"INSERT INTO USERS (email, password) VALUES ('{email}', '{password}')"
+            f"INSERT INTO USERS (email, password, permission) VALUES ('{email}', '{password}', 'read')"
         )

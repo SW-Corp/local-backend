@@ -6,8 +6,6 @@ import socketserver
 import bcrypt
 from dbservice import DBService
 
-# "user@email.com": "$2b$12$yOaeOCNaJybzzO7s13W06ur7bY4E82L.JdKJOkxfqHdY1EXT3Brh."
-
 
 class Auth(http.server.BaseHTTPRequestHandler):
     def __init__(self, *args):
@@ -23,17 +21,15 @@ class Auth(http.server.BaseHTTPRequestHandler):
     def do_POST(self):
         if self.path == "/login":
             self.login()
-        if self.path == "/usr":
-            self.userExists()
+        if self.path == "/permission":
+            self.checkPermission()
         if self.path == "/signup":
             self.signup()
 
     def signup(self):
         content_len = int(self.headers.get("Content-Length"))
-        print(content_len)
         body = self.rfile.read(content_len)
         body = json.loads(body)
-        print(body["username"], body["password"])
         username, password = (body["username"], body["password"])
         password = bcrypt.hashpw(password.encode(), bcrypt.gensalt())
         try:
@@ -44,35 +40,34 @@ class Auth(http.server.BaseHTTPRequestHandler):
 
     def login(self):
         content_len = int(self.headers.get("Content-Length"))
-        print(content_len)
         body = self.rfile.read(content_len)
         body = json.loads(body)
-        print(body["username"], body["password"])
         if self.validate(body["username"], body["password"]):
             self.respond(200, "")
         else:
             self.respond(401, "")
         return
 
-    def userExists(self):
+    def checkPermission(self):
         content_len = int(self.headers.get("Content-Length"))
         body = self.rfile.read(content_len)
         body = json.loads(body)
-        if self.dbService.userExist(body["username"]):
-            self.respond(200, "")
-        else:
-            self.respond(404, "No such user")
+        try:
+            if self.dbService.checkPermission(body["username"], body["permission"]):
+                self.respond(200, "")
+            else:
+                self.respond(403, "Insufficient permissions")
+        except Exception:
+            self.respond(401, "User not found")
 
     def validate(self, username, password):
         # try:
         hashedPass = self.dbService.getHashedPassword(username)
-        try:
-            return bcrypt.checkpw(
-                password.encode("utf-8"),
-                hashedPass.encode("utf-8"),
-            )
-        except Exception:
-            return False
+
+        return bcrypt.checkpw(
+            password.encode("utf-8"),
+            hashedPass.encode("utf-8"),
+        )
 
 
 def main(serverPort: int, debugMode: bool) -> None:

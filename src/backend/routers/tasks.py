@@ -16,14 +16,14 @@ class TasksRouterBuilder:
     def build(self) -> APIRouter:
         router = APIRouter()
 
-        @router.get("/task/list/{workstation}", response_model=List[Task])
+        @router.get("/tasklist/{workstation}", response_model=List[Task])
         async def listTasks(workstation: str):
             try:
                 return self.tasksController.getQueue(workstation)
             except WorkstationNotFound:
                 raise HTTPException(404, "Workstation not found")
 
-        @router.post("/task/flush/{workstation}")
+        @router.post("/flushqueue/{workstation}")
         async def clearTasks(workstation: str):
             try:
                 self.tasksController.flushQueue(workstation)

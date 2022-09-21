@@ -1,8 +1,12 @@
 from dataclasses import dataclass
+from typing import Tuple
 
 from fastapi import FastAPI, Request, WebSocket
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
+
+from backend.controllers.auth import PermissionType
+from backend.exceptions.auth import InsufficientPermission
 
 from .controllers import AuthConfig, AuthController, WorkstationController
 from .exceptions import AuthenticatorServiceException, InvalidCredentialsError
@@ -12,9 +16,42 @@ from .services import (DBConfig, DBService, InfluxConfig, InfluxService,
                        NotificationsService)
 
 NOT_SECURED_PATHS = [
-    "/login",
-    "/signup",
+    ("/login", "POST"),
+    ("/signup", "POST"),
 ]
+
+# base permission
+READ_PATHS = [
+    ("/workstations", "GET"),
+    ("/workstation", "GET"),
+    ("/tasklist/", "GET"),
+    ("/metrics", "GET"),
+    ("/logout", "POST"),
+]
+
+WRITE_PATHS = [
+    ("/flushqueue", "POST"),
+    ("/task", "POST"),
+    ("/scenario", "POST"),
+    ("/metrics", "POST"),
+]
+
+MANAGING_USERS_PATHS = [
+    ("/users", "GET"),
+    ("/permission", "POST"),
+]
+
+AUTH_SCHEME = {
+    PermissionType.READ: READ_PATHS,
+    PermissionType.WRITE: WRITE_PATHS,
+    PermissionType.MANAGE_USERS: MANAGING_USERS_PATHS,
+}
+
+
+def get_permission(path: Tuple[str, str]) -> PermissionType:
+    for key in AUTH_SCHEME:
+        if path in AUTH_SCHEME[key]:
+            return key
 
 
 @dataclass
@@ -43,21 +80,19 @@ class HTTPServer:
 
         @app.middleware("http")
         async def authMiddleware(request: Request, call_next):
-            print("authMiddleware")
-
-            if (
-                request.scope["path"] in NOT_SECURED_PATHS
-                or self.authconfig.mode == "OFF"
-            ):
+            path = (f"/{request.scope['path'].split('/')[1]}", request.scope["method"])
+            if path in NOT_SECURED_PATHS or self.authconfig.mode == "OFF":
                 response = await call_next(request)
                 return response
             else:
+                permission: PermissionType = get_permission(path)
+                print(permission)
                 try:
                     cookie = request.cookies["Authorization"]
                 except Exception:
                     return JSONResponse("Authorization cookie missing", 401)
                 try:
-                    if authController.validate(cookie):
+                    if authController.validate(cookie, permission):
                         response = await call_next(request)
                     else:
                         JSONResponse("Wrong email or password", 401)
@@ -65,6 +100,8 @@ class HTTPServer:
                     return JSONResponse(e.detail, 401)
                 except AuthenticatorServiceException as e:
                     return JSONResponse(e.detail, 500)
+                except InsufficientPermission as e:
+                    return JSONResponse(e.detail, 403)
 
             return response
 

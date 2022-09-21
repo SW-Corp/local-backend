@@ -12,3 +12,7 @@ class AuthenticatorServiceException(AuthException):
 
 class InvalidCredentialsError(AuthException):
     pass
+
+
+class InsufficientPermission(AuthException):
+    pass

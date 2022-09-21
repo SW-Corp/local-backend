@@ -3,6 +3,7 @@ from typing import Union
 from fastapi import APIRouter, Cookie, HTTPException, Response
 from pydantic import BaseModel
 
+from backend.controllers.auth import Permission, UserList
 from backend.exceptions.auth import InvalidCredentialsError
 
 from ..controllers import AuthController
@@ -51,5 +52,16 @@ class AuthRouterBuilder:
         async def logout(response: Response):
             response.set_cookie("Authorization", "", 0)
             return "logout"
+
+        @router.get("/users", response_model=UserList)
+        async def get_users():
+            return self.authController.get_users()
+
+        @router.post("/permission")
+        async def add_permission(permission: Permission):
+            try:
+                self.authController.add_permission(permission)
+            except Exception as e:
+                raise HTTPException(500, str(e))
 
         return router
