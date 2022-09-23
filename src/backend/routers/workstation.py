@@ -26,7 +26,7 @@ class WorkstationRouterBuilder:
 
         @router.post("/metrics")
         async def pushMetrics(metricsList: MetricsList):
-            self.worstationController.pushMetrics(metricsList)
+            await self.worstationController.pushMetrics(metricsList)
 
         @router.get("/metrics/{stationname}")
         async def pullMetrics(stationname):

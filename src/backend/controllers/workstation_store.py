@@ -1,12 +1,17 @@
 from enum import Enum
-from typing import List
+from typing import List, Optional
 
 from pydantic import BaseModel
 
 
 class MetricType(str, Enum):
     WATER_LEVEL = "water_level"
-    OPEN_LEVEL = "is_open"
+    IS_OPEN = "is_open"
+    PRESSURE = "pressure"
+    VOLTAGE = "voltage"
+    CURRENT = "current"
+    IS_ON = "is_on"
+    FLOAT_SWITCH_UP = "float_switch_up"
 
 
 class ComponentType(str, Enum):
@@ -28,6 +33,7 @@ class Component(BaseModel):
     name: str
     display_name: str
     component_type: ComponentType
+    offset: Optional[float]  # only for tanks
 
 
 class ComponentMetric(BaseModel):
@@ -44,7 +50,7 @@ class WorkstationSpecification(BaseModel):
 def init_store(dbService):
     store = {}
     worstations_query = "SELECT * FROM WORKSTATIONS"
-    components_query = "SELECT * FROM COMPONENTS"
+    components_query = "SELECT * FROM COMPONENTS LEFT JOIN TANKS_OFFSET on COMPONENTS.name = TANKS_OFFSET.component_name"
     metrics_query = "SELECT * FROM COMPONENTS INNER JOIN METRICS on COMPONENTS.component_type = METRICS.component_type;"
 
     workstations_response = dbService.run_query(worstations_query)
@@ -75,12 +81,16 @@ def init_store(dbService):
         )
 
         for component in component_records:
+            offset = None
+            if component["component_type"] == ComponentType.TANK:
+                offset = component["offset_"]
             components.append(
                 Component(
                     component_id=component["component_id"],
                     name=component["name"],
                     display_name=component["display_name"],
                     component_type=ComponentType(component["component_type"]),
+                    offset=offset,
                 )
             )
         # component is stored in metrics and in components idk its kinda sloppy but its easier thiw way xd

@@ -41,7 +41,6 @@ class InfluxService:
     def write(self, workstation: str, metrics: list) -> None:
         points = []
         for i in metrics:
-            print(i.measurement, workstation, i.field, i.value)
             points.append(
                 Point(i.measurement)
                 .tag("workstation", workstation)

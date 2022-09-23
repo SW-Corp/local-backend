@@ -10,8 +10,14 @@ from backend.services.notifications_service import NotificationsService
 
 from ..services import InfluxService
 from ..utils import get_logger
-from .task_models import (Condition, ConditionType, Operator, Task,
-                          TaskNotification, TaskStatus)
+from .task_models import (
+    Condition,
+    ConditionType,
+    Operator,
+    Task,
+    TaskNotification,
+    TaskStatus,
+)
 from .workstation_store import WorkstationSpecification
 
 logger = get_logger("Task pusher")

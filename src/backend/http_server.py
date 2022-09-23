@@ -10,10 +10,15 @@ from backend.exceptions.auth import InsufficientPermission
 
 from .controllers import AuthConfig, AuthController, WorkstationController
 from .exceptions import AuthenticatorServiceException, InvalidCredentialsError
-from .routers import (AuthRouterBuilder, TasksRouterBuilder,
-                      WorkstationRouterBuilder)
-from .services import (DBConfig, DBService, InfluxConfig, InfluxService,
-                       NotificationsService)
+from .routers import AuthRouterBuilder, TasksRouterBuilder, WorkstationRouterBuilder
+from .services import (
+    DBConfig,
+    DBService,
+    InfluxConfig,
+    InfluxService,
+    NotificationsService,
+    PushingStateService,
+)
 
 NOT_SECURED_PATHS = [
     ("/login", "POST"),
@@ -65,8 +70,9 @@ class HTTPServer:
         dbservice: DBService = DBService(self.dbconfig)
         influx_service: InfluxService = InfluxService(self.influxconfig)
         notificationsService: NotificationsService = NotificationsService()
+        pushingStateService: PushingStateService = PushingStateService()
         workstationController: WorkstationController = WorkstationController(
-            dbservice, influx_service, notificationsService
+            dbservice, influx_service, notificationsService, pushingStateService
         )
         authController: AuthController = AuthController(self.authconfig, dbservice)
 
@@ -114,9 +120,14 @@ class HTTPServer:
         for router in routers:
             app.include_router(router.build())
 
-        @app.websocket("/ws")
-        async def handle_websocket(websocket: WebSocket):
+        @app.websocket("/subscribe/notifications")
+        async def handle_websocket_notification(websocket: WebSocket):
             await websocket.accept()
             await notificationsService.connect(websocket)
+
+        @app.websocket("/subscribe/state")
+        async def handle_websocket_state(websocket: WebSocket):
+            await websocket.accept()
+            await pushingStateService.connect(websocket)
 
         return app
