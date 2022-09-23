@@ -62,11 +62,13 @@ class Auth(http.server.BaseHTTPRequestHandler):
     def validate(self, username, password):
         # try:
         hashedPass = self.dbService.getHashedPassword(username)
-
-        return bcrypt.checkpw(
-            password.encode("utf-8"),
-            hashedPass.encode("utf-8"),
-        )
+        try:
+            return bcrypt.checkpw(
+                password.encode("utf-8"),
+                hashedPass.encode("utf-8"),
+            )
+        except AttributeError:
+            return False
 
 
 def main(serverPort: int, debugMode: bool) -> None:

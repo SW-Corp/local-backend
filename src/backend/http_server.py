@@ -8,16 +8,14 @@ from fastapi.responses import JSONResponse
 from backend.controllers.auth import PermissionType
 from backend.exceptions.auth import InsufficientPermission
 
-from .controllers import AuthConfig, AuthController, WorkstationController
+from .controllers import AuthConfig, AuthController, WorkstationController, NotificationsService, PushingStateService
 from .exceptions import AuthenticatorServiceException, InvalidCredentialsError
 from .routers import AuthRouterBuilder, TasksRouterBuilder, WorkstationRouterBuilder
 from .services import (
     DBConfig,
     DBService,
     InfluxConfig,
-    InfluxService,
-    NotificationsService,
-    PushingStateService,
+    InfluxService
 )
 
 NOT_SECURED_PATHS = [
@@ -43,6 +41,7 @@ WRITE_PATHS = [
 
 MANAGING_USERS_PATHS = [
     ("/users", "GET"),
+    ("/user", "DELETE"),
     ("/permission", "POST"),
 ]
 
@@ -69,12 +68,12 @@ class HTTPServer:
         app = FastAPI(title="HTTP keyserver", version="0.1")
         dbservice: DBService = DBService(self.dbconfig)
         influx_service: InfluxService = InfluxService(self.influxconfig)
-        notificationsService: NotificationsService = NotificationsService()
-        pushingStateService: PushingStateService = PushingStateService()
+        authController: AuthController = AuthController(self.authconfig, dbservice)
+        notificationsService: NotificationsService = NotificationsService(authController)
+        pushingStateService: PushingStateService = PushingStateService(authController)
         workstationController: WorkstationController = WorkstationController(
             dbservice, influx_service, notificationsService, pushingStateService
         )
-        authController: AuthController = AuthController(self.authconfig, dbservice)
 
         app.add_middleware(
             CORSMiddleware,
@@ -99,6 +98,8 @@ class HTTPServer:
                     return JSONResponse("Authorization cookie missing", 401)
                 try:
                     if authController.validate(cookie, permission):
+                        user = authController.get_user_from_cookie(cookie)
+                        request.state.request_user = user
                         response = await call_next(request)
                     else:
                         JSONResponse("Wrong email or password", 401)

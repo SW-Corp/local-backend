@@ -51,7 +51,6 @@ class AuthController:
     def call_authenticator(self, method, path, body):
         httpsConnection = HTTPConnection(self.config.addr, self.config.port)
         body = json.dumps(body)
-
         try:
             httpsConnection.request(method, path, body)
         except Exception:
@@ -82,14 +81,17 @@ class AuthController:
 
         return self.generateCookie(username)
 
-    def validate(self, cookie: str, permission) -> bool:
+    def get_user_from_cookie(self, cookie: str):
         try:
             cookie_content = jwt.decode(
                 cookie, self.config.secret_key, algorithms=["HS256"]
             )
-            body = {"username": cookie_content["username"], "permission": permission}
+            return cookie_content["username"]
         except Exception:
             raise InvalidCredentialsError("Cookie invalid or missing")
+            
+    def validate(self, cookie: str, permission) -> bool:
+        body = {"username": self.get_user_from_cookie(cookie), "permission": permission} 
 
         self.call_authenticator("POST", "/permission", body)
 
@@ -97,6 +99,10 @@ class AuthController:
 
     def add_permission(self, permission: Permission):
         query = f"UPDATE USERS SET permission = '{permission.permission}' WHERE email = '{permission.user}'"
+        self.dbService.run_query_insert(query)
+
+    def delete_user(self, user: str):
+        query = f"DELETE FROM USERS WHERE email = '{user}'"
         self.dbService.run_query_insert(query)
 
     def get_users(self) -> UserList:

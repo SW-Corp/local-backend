@@ -7,7 +7,7 @@ from backend.exceptions import WorkstationNotFound
 from backend.exceptions.workstation import InvalidMetric
 from backend.services import DBService
 from backend.services.influx_service import InfluxService
-from backend.services.notifications_service import (
+from backend.controllers.websockets_controller import (
     NotificationsService,
     PushingStateService,
 )

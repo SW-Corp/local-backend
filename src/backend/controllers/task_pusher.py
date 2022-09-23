@@ -6,7 +6,7 @@ from queue import Queue
 from threading import Thread
 from typing import Dict, List, Tuple
 
-from backend.services.notifications_service import NotificationsService
+from backend.controllers.websockets_controller import NotificationsService
 
 from ..services import InfluxService
 from ..utils import get_logger

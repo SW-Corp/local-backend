@@ -5,7 +5,7 @@ from typing import Dict, List
 
 from pydantic import BaseModel
 
-from backend.services.notifications_service import NotificationsService
+from backend.controllers.websockets_controller import NotificationsService
 
 from ..exceptions import WorkstationNotFound
 from ..services import InfluxService

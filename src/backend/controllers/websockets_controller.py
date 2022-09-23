@@ -4,11 +4,16 @@ from typing import Dict, List
 
 from pydantic import BaseModel
 
-from ..controllers.task_models import TaskNotification
+from .task_models import TaskNotification
+from .auth import AuthController, PermissionType
 
+class WebsocketConnectModel(BaseModel):
+    workstation: str
+    cookie: str
 
 @dataclass
 class WebsocketService:
+    authController: AuthController
     workstations: List[str] = field(default_factory=list)
     websockets: Dict[str, List] = field(default_factory=dict)
 
@@ -21,17 +26,31 @@ class WebsocketService:
         try:
             added = False
             while True:
-                workstation = await websocket.receive_text()
+                connect_payload = json.loads(await websocket.receive_text())
+                connect_model = WebsocketConnectModel(
+                    workstation=connect_payload["workstation"],
+                    cookie=connect_payload["cookie"]
+                )
                 if not added:
-                    if workstation not in self.workstations:
+                    if connect_model.workstation not in self.workstations:
                         await websocket.send_text("Invalid workstation!")
+                        print("Error accepting socket, invalid workstation")
+                        continue
+                    
+                    if self.authController.config.mode == "ON" and not self.validate(connect_model.cookie):
+                        await websocket.send_text("Not validated!")
+                        print("Error accepting socket, not validated")
                         continue
 
-                    self.websockets[str(workstation)].append(websocket)
+                    self.websockets[str(connect_model.workstation)].append(websocket)
                     added = True
                     await websocket.send_text("Connected")
-        except Exception:
-            pass
+        except Exception as e:
+            await websocket.send_text(f"Error accepting socket connection: {e}")
+            print(f"Error accepting socket connection: {e}")
+
+    def validate(self, cookie: str):
+        return self.authController.validate(cookie, PermissionType.READ)
 
 
 class NotificationsService(WebsocketService):
