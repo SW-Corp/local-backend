@@ -5,6 +5,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+    image: swcorp_server_image
     container_name: swcorp_server
     ports:
       - '8000:8000'
@@ -47,7 +48,7 @@ services:
 
   authenticator:
     build: ./authenticator
-    image: swcorp/authenticator
+    image: swcorp_authenticator_image
     container_name: swcorp_authenticator
     networks: 
       - backend
