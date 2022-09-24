@@ -12,5 +12,5 @@ __all__ = [
     "TasksController",
     "WorkstationController",
     "NotificationsService",
-    "PushingStateService"
+    "PushingStateService",
 ]

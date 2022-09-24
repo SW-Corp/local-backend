@@ -65,6 +65,7 @@ class WorkstationMetricsState(BaseModel):
     pumps: Dict[str, PumpState]
     valves: Dict[str, ValveState]
     tanks: Dict[str, TankState]
+    type: str = "state"
 
 
 @dataclass

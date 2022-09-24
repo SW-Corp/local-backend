@@ -7,15 +7,16 @@ from fastapi.responses import JSONResponse
 from backend.controllers.auth import PermissionType
 from backend.exceptions.auth import InsufficientPermission
 
-from .controllers import AuthConfig, AuthController, WorkstationController, NotificationsService, PushingStateService
+from .controllers import (
+    AuthConfig,
+    AuthController,
+    WorkstationController,
+    NotificationsService,
+    PushingStateService,
+)
 from .exceptions import AuthenticatorServiceException, InvalidCredentialsError
 from .routers import AuthRouterBuilder, TasksRouterBuilder, WorkstationRouterBuilder
-from .services import (
-    DBConfig,
-    DBService,
-    InfluxConfig,
-    InfluxService
-)
+from .services import DBConfig, DBService, InfluxConfig, InfluxService
 
 NOT_SECURED_PATHS = [
     ("/login", "POST"),
@@ -68,7 +69,9 @@ class HTTPServer:
         dbservice: DBService = DBService(self.dbconfig)
         influx_service: InfluxService = InfluxService(self.influxconfig)
         authController: AuthController = AuthController(self.authconfig, dbservice)
-        notificationsService: NotificationsService = NotificationsService(authController)
+        notificationsService: NotificationsService = NotificationsService(
+            authController
+        )
         pushingStateService: PushingStateService = PushingStateService(authController)
         workstationController: WorkstationController = WorkstationController(
             dbservice, influx_service, notificationsService, pushingStateService

@@ -12,6 +12,7 @@ from ..controllers import AuthController
 class User(BaseModel):
     email: str
 
+
 class LoginBody(BaseModel):
     email: str
     password: str

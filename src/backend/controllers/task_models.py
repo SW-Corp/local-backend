@@ -47,3 +47,4 @@ class Task(BaseModel):
 class TaskNotification(BaseModel):
     status: TaskStatus
     task: Task
+    type: str = "notification"

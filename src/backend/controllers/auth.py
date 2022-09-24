@@ -89,9 +89,9 @@ class AuthController:
             return cookie_content["username"]
         except Exception:
             raise InvalidCredentialsError("Cookie invalid or missing")
-            
+
     def validate(self, cookie: str, permission) -> bool:
-        body = {"username": self.get_user_from_cookie(cookie), "permission": permission} 
+        body = {"username": self.get_user_from_cookie(cookie), "permission": permission}
 
         self.call_authenticator("POST", "/permission", body)
 

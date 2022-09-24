@@ -6,6 +6,7 @@ import socketserver
 import bcrypt
 from dbservice import DBService
 
+
 class Auth(http.server.BaseHTTPRequestHandler):
     def __init__(self, *args):
         self.dbService = DBService()
