@@ -42,7 +42,8 @@ class AuthRouterBuilder:
             response: Response,
             Authorization: Union[str, None] = Cookie(default=None),
         ):
-            print(Authorization)
+            print("loginData")
+            print(loginData)
             try:
                 cookie = self.authController.login(loginData.email, loginData.password)
                 response.headers["Set-Cookie"] = cookie

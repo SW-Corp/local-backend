@@ -1,6 +1,5 @@
 from dataclasses import dataclass
 from typing import Tuple
-
 from fastapi import FastAPI, Request, WebSocket
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
@@ -75,14 +74,6 @@ class HTTPServer:
             dbservice, influx_service, notificationsService, pushingStateService
         )
 
-        app.add_middleware(
-            CORSMiddleware,
-            allow_origins=["*"],
-            allow_credentials=True,
-            allow_methods=["*"],
-            allow_headers=["*"],
-        )
-
         @app.middleware("http")
         async def authMiddleware(request: Request, call_next):
             path = (f"/{request.scope['path'].split('/')[1]}", request.scope["method"])
@@ -98,8 +89,8 @@ class HTTPServer:
                     return JSONResponse("Authorization cookie missing", 401)
                 try:
                     if authController.validate(cookie, permission):
-                        user = authController.get_user_from_cookie(cookie)
-                        request.state.request_user = user
+                        # user = authController.get_user_from_cookie(cookie)
+                        # request.state.request_user = user
                         response = await call_next(request)
                     else:
                         JSONResponse("Wrong email or password", 401)
@@ -130,5 +121,13 @@ class HTTPServer:
         async def handle_websocket_state(websocket: WebSocket):
             await websocket.accept()
             await pushingStateService.connect(websocket)
+
+        app.add_middleware(
+            CORSMiddleware,
+            allow_origins=["*"],
+            allow_credentials=True,
+            allow_methods=["*"],
+            allow_headers=["*"],
+        )
 
         return app
