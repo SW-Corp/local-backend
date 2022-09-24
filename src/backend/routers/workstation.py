@@ -1,4 +1,5 @@
 from fastapi import APIRouter, HTTPException
+from fastapi.responses import Response
 
 from ..controllers import MetricsList, WorkstationController
 from ..exceptions import WorkstationNotFound
@@ -27,6 +28,7 @@ class WorkstationRouterBuilder:
         @router.post("/metrics")
         async def pushMetrics(metricsList: MetricsList):
             await self.worstationController.pushMetrics(metricsList)
+            return Response(status_code=201)
 
         @router.get("/metrics/{stationname}")
         async def pullMetrics(stationname):
