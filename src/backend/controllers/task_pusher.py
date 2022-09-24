@@ -79,11 +79,11 @@ class TaskPusherThread(Thread):
         )
 
     def run(self):
-        httpconnection: HTTPConnection = HTTPConnection(
-            self.workstationData.info.connector_address,
-            self.workstationData.info.connector_port,
-        )
         while True:
+            httpconnection: HTTPConnection = HTTPConnection(
+                self.workstationData.info.connector_address,
+                self.workstationData.info.connector_port,
+            )
             task: Task = self.queue.get()
             self.processing_task = True
             logger.debug("Got task from the queue")
@@ -96,10 +96,10 @@ class TaskPusherThread(Thread):
                 self.processing_task = False
                 self.send_task(httpconnection, task)
                 self.sendNotification(TaskStatus.SUCCESS, task)
-            except Exception:
+            except Exception as e:
                 self.sendNotification(TaskStatus.CONNECTOR_ERROR, task)
                 time.sleep(1)
-                logger.info("Trying to reconnect to connector")
+                logger.info(f"Trying to reconnect to connector, error: {e}")
                 httpconnection = HTTPConnection(
                     self.workstationData.info.connector_address,
                     self.workstationData.info.connector_port,
@@ -196,6 +196,7 @@ class TaskPusherThread(Thread):
     def send_task(self, httpconnection: HTTPConnection, task: Task):
         try:
             body = task.json()
+            print(body)
             httpconnection.request("POST", "/task", body)
             response = httpconnection.getresponse()
             response.read()
@@ -206,7 +207,7 @@ class TaskPusherThread(Thread):
         if response.status == 200:
             logger.debug("Successfully sent a task!")
         else:
-            logger.debug(f"Error sending task: {response}")
+            logger.debug(f"Error sending task: {response.status}")
             raise Exception
 
     def fluxtable_to_metrics_data(
