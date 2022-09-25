@@ -91,7 +91,7 @@ class TaskPusherThread(Thread):
             logger.debug("Got task from the queue")
 
             if task.action == TaskAction.END_SCENARIO:
-                self.sendNotification(TaskStatus.SUCCESS, f"Scenario {task.target} finished!")
+                self.sendNotification(TaskStatus.SUCCESS, task)
                 continue
             if not self.check_conditions(task):
                 self.sendNotification(TaskStatus.CONDITIONS_NOT_MET, task)

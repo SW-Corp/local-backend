@@ -1,20 +1,9 @@
 {
 "tasks": [
         {
-            "action": "open",
-            "target": "zawur1 mordo",
-            "value": 100,
-            "conditions": {
-                "operator": "and",
-                "conditionlist": [
-                {
-                    "type": "equal",
-                    "measurement": "temperature",
-                    "field": "sensor1",
-                    "value": 100
-                }
-                ]
-            }
+            "action": "is_open",
+            "target": "V1",
+            "value": 1
         }
     ]
 }
