@@ -10,7 +10,6 @@ class Operator(str, Enum):
 
 
 class ConditionType(str, Enum):
-    TIMEOUT = "timeout"
     EQUAL = "equal"
     LESS = "less"
     MORE = "more"
@@ -35,12 +34,18 @@ class Conditions(BaseModel):
     operator: Operator
     conditionlist: List[Condition]
 
+class TaskAction(str, Enum):
+    IS_ON = "is_on"
+    IS_OPEN = "is_open"
+    STOP = "stop"
+
 
 class Task(BaseModel):
-    action: str
+    action: TaskAction
     target: str
     value: float
     ttl: Optional[int]
+    timeout: Optional[int]
     conditions: Optional[Conditions]
 
 

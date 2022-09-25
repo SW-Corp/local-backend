@@ -85,6 +85,7 @@ class TaskPusherThread(Thread):
                 self.workstationData.info.connector_port,
             )
             task: Task = self.queue.get()
+            print(self.queue.queue)
             self.processing_task = True
             logger.debug("Got task from the queue")
             if not self.check_conditions(task):
@@ -99,11 +100,7 @@ class TaskPusherThread(Thread):
             except Exception as e:
                 self.sendNotification(TaskStatus.CONNECTOR_ERROR, task)
                 time.sleep(1)
-                logger.info(f"Trying to reconnect to connector, error: {e}")
-                httpconnection = HTTPConnection(
-                    self.workstationData.info.connector_address,
-                    self.workstationData.info.connector_port,
-                )
+
 
     def getConditionsMetrics(self, conditions: List[Condition]):
         query_conditions: List[str] = map(
@@ -150,26 +147,23 @@ class TaskPusherThread(Thread):
 
     def check_conditions(self, task: Task):
         beginning = time.time()
-        if not task.conditions:
-            return True
-        conditions: List[Condition] = task.conditions.conditionlist
-        timeoutCondition = list(
-            filter(lambda x: x.type == ConditionType.TIMEOUT, conditions)
-        )
-
         if task.ttl:
             timeout = beginning + task.ttl
         else:
             timeout = beginning + DEFAULT_TASK_TIMEOUT
-
-        if timeoutCondition:
-            timeout += timeoutCondition[0].value
-            while time.time() <= beginning + timeoutCondition[0].value:
+        if task.timeout:
+            timeout += task.timeout
+            while time.time() <= beginning + task.timeout:
                 time.sleep(0.5)
                 logger.debug("timeout...")
                 if self.abort_task.get_value():
                     logger.debug("flush order")
                     return False
+                    
+        if not task.conditions:
+            return True
+        conditions: List[Condition] = task.conditions.conditionlist
+
 
         while time.time() <= timeout:
             if self.abort_task.get_value():

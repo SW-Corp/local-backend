@@ -22,23 +22,28 @@ class ScenarioParser:
         taskList: List[Task] = []
         for task in data:
             conditionList: List[Condition] = []
-            for condition in task["conditions"]["conditionlist"]:
-                conditionList.append(
-                    Condition(
-                        type=ConditionType(condition["type"].lower()),
-                        measurement=condition["measurement"].lower(),
-                        field=condition["field"].lower(),
-                        value=condition["value"],
+            if "conditions" not in task.keys():
+                conditions = None
+            else:
+                for condition in task["conditions"]["conditionlist"]:
+                    conditionList.append(
+                        Condition(
+                            type=ConditionType(condition["type"]),
+                            measurement=condition["measurement"],
+                            field=condition["field"],
+                            value=condition["value"],
+                        )
                     )
+                conditions = Conditions(
+                    operator=Operator(task["conditions"]["operator"]),
+                    conditionlist=conditionList,
                 )
-            conditions = Conditions(
-                operator=Operator(task["conditions"]["operator"].lower()),
-                conditionlist=conditionList,
-            )
             taskItem = Task(
-                action=task["action"].lower(),
-                target=task["target"].lower(),
+                action=task["action"],
+                target=task["target"],
                 value=task["value"],
+                timeout=task.get("timeout", None),
+                ttl=task.get("ttl", None),
                 conditions=conditions,
             )
             taskList.append(taskItem)

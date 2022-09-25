@@ -10,7 +10,7 @@ from backend.controllers.websockets_controller import NotificationsService
 from ..exceptions import WorkstationNotFound
 from ..services import InfluxService
 from ..utils import get_logger
-from .task_models import Task
+from .task_models import Task, TaskAction
 from .task_pusher import ClearQueueSignal, TaskPusherThread
 from .workstation_store import WorkstationSpecification
 
@@ -55,6 +55,8 @@ class TasksController:
 
     def addTask(self, workstation: str, task: Task):
         try:
+            if task.action == TaskAction.STOP:
+                self.flushQueue(workstation)
             self.taskQueuesStore[workstation].put(task)
         except KeyError:
             raise WorkstationNotFound
