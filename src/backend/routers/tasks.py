@@ -2,10 +2,17 @@ from typing import List
 
 from fastapi import APIRouter, HTTPException
 from fastapi.responses import JSONResponse
+from backend.controllers import workstation
+from backend.controllers.task_models import TaskAction
 
 from ..controllers import Task, TasksController
 from ..controllers.scenario_parser import ScenarioParser
 from ..exceptions import WorkstationNotFound
+from pydantic import BaseModel
+import os
+
+class Scenarios(BaseModel):
+    scenarios: List[str]
 
 
 class TasksRouterBuilder:
@@ -40,10 +47,29 @@ class TasksRouterBuilder:
 
         @router.post("/scenario/{workstation}/{scenario_name}")
         async def playScenario(workstation: str, scenario_name: str):
-            scenario: List[Task] = self.scenarioParser.parse_from_json_file(
-                f"./src/backend/assets/scenarios/{scenario_name}"
-            )
+            try:
+                scenario: List[Task] = self.scenarioParser.parse_from_json_file(
+                    f"./src/backend/assets/scenarios/{scenario_name}.json"
+                )
+            except FileNotFoundError:
+                raise HTTPException(404, "Scenario not found")
+            except Exception:
+                raise HTTPException(500, "Invalid scenario format")
             for task in scenario:
                 self.tasksController.addTask(workstation, task)
+            self.tasksController.addTask(workstation, Task(
+                action=TaskAction("end_scenario"),
+                target=scenario_name,
+                value=1
+            ))
+
+        @router.get("/scenarios")
+        async def getScenarios():
+            files = os.listdir("./src/backend/assets/scenarios")
+            print(files)
+            files_no_ext = list(map(lambda x: x.split('.json')[0], files))
+            print(files_no_ext)
+
+            return Scenarios(scenarios=files_no_ext)
 
         return router

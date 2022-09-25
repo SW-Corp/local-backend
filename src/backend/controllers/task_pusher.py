@@ -17,6 +17,7 @@ from .task_models import (
     Task,
     TaskNotification,
     TaskStatus,
+    TaskAction
 )
 from .workstation_store import WorkstationSpecification
 
@@ -88,6 +89,10 @@ class TaskPusherThread(Thread):
             print(self.queue.queue)
             self.processing_task = True
             logger.debug("Got task from the queue")
+
+            if task.action == TaskAction.END_SCENARIO:
+                self.sendNotification(TaskStatus.SUCCESS, f"Scenario {task.target} finished!")
+                continue
             if not self.check_conditions(task):
                 self.sendNotification(TaskStatus.CONDITIONS_NOT_MET, task)
                 logger.debug("contitions not met")

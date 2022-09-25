@@ -14,9 +14,10 @@ class ScenarioParser:
             try:
                 data = json.load(file)
                 return self.parse_from_json(data["tasks"])
-            except KeyError as e:
+            except Exception as e:
                 logger.error(f"Error parsing task {e}")
                 raise ErrorParsingTask
+             
 
     def parse_from_json(self, data: list) -> List[Task]:
         taskList: List[Task] = []
