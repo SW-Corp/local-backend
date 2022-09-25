@@ -77,9 +77,9 @@ class AuthController:
 
     def login(self, username: str, password: str):
         body = {"username": username, "password": password}
-        self.call_authenticator("POST", "/login", body)
-
-        return self.generateCookie(username)
+        response = self.call_authenticator("POST", "/login", body)
+        permission = json.loads(response)["permission"]
+        return self.generateCookie(username), permission
 
     def get_user_from_cookie(self, cookie: str):
         try:

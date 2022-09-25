@@ -21,6 +21,7 @@ class LoginBody(BaseModel):
 class LoginResponse(BaseModel):
     email: str
     message: str
+    permission: str
 
 
 class AuthRouterBuilder:
@@ -43,15 +44,13 @@ class AuthRouterBuilder:
             response: Response,
             Authorization: Union[str, None] = Cookie(default=None),
         ):
-            print("loginData")
-            print(loginData)
             try:
-                cookie = self.authController.login(loginData.email, loginData.password)
+                cookie, permission = self.authController.login(loginData.email, loginData.password)
                 response.headers["Set-Cookie"] = cookie
             except InvalidCredentialsError:
                 raise HTTPException(401, "Invalid credentials")
 
-            return LoginResponse(email=loginData.email, message="login")
+            return LoginResponse(email=loginData.email, message="login", permission=permission)
 
         @router.get("/logout")
         async def logout(response: Response):

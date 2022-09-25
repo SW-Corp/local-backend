@@ -42,8 +42,13 @@ class Auth(http.server.BaseHTTPRequestHandler):
         content_len = int(self.headers.get("Content-Length"))
         body = self.rfile.read(content_len)
         body = json.loads(body)
+        try:
+            permission = self.dbService.getPermission(body["username"])
+        except:
+            self.respond(500, "Can't get permission")
+
         if self.validate(body["username"], body["password"]):
-            self.respond(200, "")
+            self.respond(200, json.dumps({"permission": permission}))
         else:
             self.respond(401, "")
         return

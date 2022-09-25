@@ -53,6 +53,11 @@ class DBService:
         except Exception:
             return None
 
+    def getPermission(self, email):
+        query = f"SELECT permission FROM Users WHERE email='{email}'"
+        return self.dbController.execQuery(query)[0][0]
+
+
     def checkPermission(self, email, permission):
         permission_levels = {
             "read": ["read"],
