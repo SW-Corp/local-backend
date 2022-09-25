@@ -27,9 +27,9 @@ NOT_SECURED_PATHS = [
 READ_PATHS = [
     ("/workstations", "GET"),
     ("/workstation", "GET"),
-    ("/tasklist/", "GET"),
+    ("/tasklist", "GET"),
     ("/metrics", "GET"),
-    ("/logout", "POST"),
+    ("/logout", "GET"),
 ]
 
 WRITE_PATHS = [
