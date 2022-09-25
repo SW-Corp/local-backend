@@ -92,8 +92,8 @@ class HTTPServer:
                     return JSONResponse("Authorization cookie missing", 401)
                 try:
                     if authController.validate(cookie, permission):
-                        # user = authController.get_user_from_cookie(cookie)
-                        # request.state.request_user = user
+                        user = authController.get_user_from_cookie(cookie)
+                        request.state.request_user = user
                         response = await call_next(request)
                     else:
                         JSONResponse("Wrong email or password", 401)
