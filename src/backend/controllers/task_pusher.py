@@ -193,7 +193,7 @@ class TaskPusherThread(Thread):
             print(body)
             httpconnection.request("POST", "/task", body)
             response = httpconnection.getresponse()
-            response.read()
+            res = response.read()
         except Exception as e:
             logger.debug(f"Error sending task {e}")
             raise Exception
@@ -201,7 +201,7 @@ class TaskPusherThread(Thread):
         if response.status == 200:
             logger.debug("Successfully sent a task!")
         else:
-            logger.debug(f"Error sending task: {response.status}")
+            logger.debug(f"Error sending task: {response.status} {res}")
             raise Exception
 
     def fluxtable_to_metrics_data(
