@@ -93,6 +93,7 @@ class TaskPusherThread(Thread):
 
             if task.action == TaskAction.START_SCENARIO:
                 self.currentScenario = task.target
+                continue
             if task.action == TaskAction.END_SCENARIO:
                 self.currentScenario = ""
                 self.sendNotification(TaskStatus.SUCCESS, task)

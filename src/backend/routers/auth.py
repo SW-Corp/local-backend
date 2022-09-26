@@ -64,16 +64,20 @@ class AuthRouterBuilder:
 
         @router.delete("/user")
         async def delete_user(user: User, request: Request):
-            if request.state.request_user == user.email:
-                raise HTTPException(404, "Can't delete yourself!")
-
+            try:
+                if request.state.request_user == user.email:
+                    raise HTTPException(404, "Can't delete yourself!")
+            except:
+                raise HTTPException(400, "Authorization has to ON to perfom this operation")
             return self.authController.delete_user(user.email)
 
         @router.post("/permission")
         async def add_permission(permission: Permission, request: Request):
-            if request.state.request_user == permission.user:
-                raise HTTPException(404, "Can't edit your own permission!")
-
+            try:
+                if request.state.request_user == permission.user:
+                    raise HTTPException(404, "Can't edit your own permission!")
+            except:
+                raise HTTPException(400, "Authorization has to ON to perfom this operation")
             try:
                 self.authController.add_permission(permission)
             except Exception as e:
