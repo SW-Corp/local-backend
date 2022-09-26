@@ -118,15 +118,13 @@ class HTTPServer:
 
         @app.websocket("/subscribe/notifications")
         async def handle_websocket_notification(websocket: WebSocket):
-            return Response(status_code=500)
-            # await websocket.accept()
-            # await notificationsService.connect(websocket)
+            await websocket.accept()
+            await notificationsService.connect(websocket)
 
         @app.websocket("/subscribe/state")
         async def handle_websocket_state(websocket: WebSocket):
-            return Response(status_code=500)
-            # await websocket.accept()
-            # await pushingStateService.connect(websocket)
+            await websocket.accept()
+            await pushingStateService.connect(websocket)
 
         app.add_middleware(
             CORSMiddleware,

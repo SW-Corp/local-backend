@@ -90,6 +90,7 @@ class NotificationsService(WebsocketService):
                 await websocket.send_text(json.dumps(notification.json()))
             except Exception as e:
                 print(f"error sending to socket {e}")
+                self.websockets[workstation] = list(filter(lambda x: x != websocket, self.websockets[workstation]))
 
 
 class PushingStateService(WebsocketService):
@@ -100,3 +101,4 @@ class PushingStateService(WebsocketService):
                 await websocket.send_text(json.dumps(state.json()))
             except Exception as e:
                 print(f"error sending to socket {e}")
+                self.websockets[workstation] = list(filter(lambda x: x != websocket, self.websockets[workstation]))
