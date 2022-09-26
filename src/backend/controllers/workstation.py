@@ -190,7 +190,7 @@ class WorkstationController:
                         lambda x: x.name == tank, self.store[workstationName].components
                     )
                 )[0].offset
-                water_level = pressure - referencePressure + offset
+                water_level = pressure - referencePressure - offset + 1
                 workstationState.tanks[tank] = TankState(
                     pressure=pressure,
                     offset=offset,

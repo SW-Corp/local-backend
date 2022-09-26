@@ -5,8 +5,11 @@ clean:
 run:
 	docker run -d -p ${port}:${port} --name ${name} ${tag}
 
+up:
+	docker compose up
+
 all:
-	docker-compose up --build
+	docker compose up --build
 
 all-nobase:
 	docker-compose up --build server authenticator
