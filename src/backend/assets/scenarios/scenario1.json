@@ -1,9 +1,10 @@
 {
-"tasks": [
-        {
-            "action": "is_open",
-            "target": "V1",
-            "value": 1
-        }
-    ]
+    "description": "Siemano, drugi scenariusz testowy",
+    "tasks": [
+            {
+                "action": "is_open",
+                "target": "V1",
+                "value": 1
+            }
+        ]
 }

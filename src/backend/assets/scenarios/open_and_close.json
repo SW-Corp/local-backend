@@ -1,4 +1,5 @@
 {
+    "description": "Siemano, scenariusz testowy",
     "tasks": [
             {
                 "action": "is_on",

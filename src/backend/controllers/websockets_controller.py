@@ -78,7 +78,8 @@ class WebsocketService:
             print(f"Error accepting socket connection: {e}")
 
     def validate(self, cookie: str):
-        return self.authController.validate(cookie, PermissionType.READ)
+        pass
+        # return self.authController.validate(cookie, PermissionType.READ)
 
 
 class NotificationsService(WebsocketService):

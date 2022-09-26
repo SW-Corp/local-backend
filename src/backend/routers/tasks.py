@@ -9,10 +9,14 @@ from ..controllers import Task, TasksController
 from ..controllers.scenario_parser import ScenarioParser
 from ..exceptions import WorkstationNotFound
 from pydantic import BaseModel
-import os
+import os, json
 
 class Scenarios(BaseModel):
     scenarios: List[str]
+
+class Scenario(BaseModel):
+    name: str
+    description: str
 
 
 class TasksRouterBuilder:
@@ -66,10 +70,13 @@ class TasksRouterBuilder:
         @router.get("/scenarios")
         async def getScenarios():
             files = os.listdir("./src/backend/assets/scenarios")
-            print(files)
-            files_no_ext = list(map(lambda x: x.split('.json')[0], files))
-            print(files_no_ext)
+            scenarios: List[Scenario] = []
+            for file in files:
+                with open(f"./src/backend/assets/scenarios/{file}", 'r') as openfile:
+                    data = json.load(openfile)
+                    description = data.get("description", "")
+                    scenarios.append(Scenario(name=file.split('.json')[0], description=description))
 
-            return Scenarios(scenarios=files_no_ext)
+            return scenarios
 
         return router
