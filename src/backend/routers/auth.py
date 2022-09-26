@@ -55,7 +55,8 @@ class AuthRouterBuilder:
         @router.get("/logout")
         async def logout(response: Response):
             response.set_cookie("Authorization", "", 0)
-            return "logout"
+            response.status_code = 200
+            return response 
 
         @router.get("/users", response_model=UserList)
         async def get_users():

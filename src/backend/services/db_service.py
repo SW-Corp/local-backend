@@ -45,7 +45,7 @@ class DBService:
             cursor.execute(query)
             records = cursor.fetchall()
             cursor.close()
-            connection.close()
+            self.pool.putconn(connection)
             return records
         else:
             raise Exception
@@ -57,6 +57,6 @@ class DBService:
             cursor.execute(query)
             connection.commit()
             cursor.close()
-            connection.close()
+            self.pool.putconn(connection)
         else:
             raise Exception

@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from typing import Tuple
 from fastapi import FastAPI, Request, WebSocket
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, Response
 
 from backend.controllers.auth import PermissionType
 from backend.exceptions.auth import InsufficientPermission
@@ -30,6 +30,7 @@ READ_PATHS = [
     ("/tasklist", "GET"),
     ("/metrics", "GET"),
     ("/logout", "GET"),
+    ("/scenarios", "GET")
 ]
 
 WRITE_PATHS = [
@@ -117,13 +118,15 @@ class HTTPServer:
 
         @app.websocket("/subscribe/notifications")
         async def handle_websocket_notification(websocket: WebSocket):
-            await websocket.accept()
-            await notificationsService.connect(websocket)
+            return Response(status_code=500)
+            # await websocket.accept()
+            # await notificationsService.connect(websocket)
 
         @app.websocket("/subscribe/state")
         async def handle_websocket_state(websocket: WebSocket):
-            await websocket.accept()
-            await pushingStateService.connect(websocket)
+            return Response(status_code=500)
+            # await websocket.accept()
+            # await pushingStateService.connect(websocket)
 
         app.add_middleware(
             CORSMiddleware,
