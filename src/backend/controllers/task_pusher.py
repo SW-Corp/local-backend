@@ -69,6 +69,7 @@ class TaskPusherThread(Thread):
         self.abort_task: ClearQueueSignal = abort_task
         self.notificationsService: NotificationsService = notificationsService
         self.processing_task: bool = False
+        self.currentScenario: str = ""
         self.loop = asyncio.new_event_loop()
 
     def sendNotification(self, status: TaskStatus, task: Task):
@@ -90,7 +91,10 @@ class TaskPusherThread(Thread):
             self.processing_task = True
             logger.debug("Got task from the queue")
 
+            if task.action == TaskAction.START_SCENARIO:
+                self.currentScenario = task.target
             if task.action == TaskAction.END_SCENARIO:
+                self.currentScenario = ""
                 self.sendNotification(TaskStatus.SUCCESS, task)
                 continue
             if not self.check_conditions(task):

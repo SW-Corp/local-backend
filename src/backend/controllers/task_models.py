@@ -38,7 +38,9 @@ class TaskAction(str, Enum):
     IS_ON = "is_on"
     IS_OPEN = "is_open"
     STOP = "stop"
-    END_SCENARIO = "end_scenario" #internal use only
+    #internal use only
+    START_SCENARIO = "start_scenario"
+    END_SCENARIO = "end_scenario" 
 
 
 class Task(BaseModel):

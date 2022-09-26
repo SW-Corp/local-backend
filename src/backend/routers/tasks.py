@@ -59,6 +59,11 @@ class TasksRouterBuilder:
                 raise HTTPException(404, "Scenario not found")
             except Exception:
                 raise HTTPException(500, "Invalid scenario format")
+            self.tasksController.addTask(workstation, Task(
+                action=TaskAction("start_scenario"),
+                target=scenario_name,
+                value=1
+            ))
             for task in scenario:
                 self.tasksController.addTask(workstation, task)
             self.tasksController.addTask(workstation, Task(

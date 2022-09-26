@@ -65,6 +65,7 @@ class WorkstationMetricsState(BaseModel):
     pumps: Dict[str, PumpState]
     valves: Dict[str, ValveState]
     tanks: Dict[str, TankState]
+    currentScenario: str
     type: str = "state"
 
 
@@ -135,12 +136,12 @@ class WorkstationController:
             for name in compnames:
                 stateJson[comptype][name] = {}
 
-        workstationState: WorkstationMetricsState = WorkstationMetricsState(
-            pumps={}, tanks={}, valves={}
-        )
-
         referencePressure: float = None
         workstationName: str = metricList.workstation_name
+        currentScenario = self.tasksController.pushingThreads[workstationName].currentScenario
+        workstationState: WorkstationMetricsState = WorkstationMetricsState(
+            pumps={}, tanks={}, valves={}, currentScenario=currentScenario
+        )
 
         try:
             for metric in metricList.metrics:
@@ -234,6 +235,8 @@ class WorkstationController:
             self.influxService.write(
                 workstation=metricList.workstation_name, metrics=metricList.metrics
             )
+
+            
         except InvalidMetric as e:
             logger.debug(f"Invalid Metric {e}")
 
