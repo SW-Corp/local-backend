@@ -11,12 +11,12 @@ from ..exceptions import WorkstationNotFound
 from pydantic import BaseModel
 import os, json
 
-class Scenarios(BaseModel):
-    scenarios: List[str]
-
 class Scenario(BaseModel):
     name: str
     description: str
+
+class Scenarios(BaseModel):
+    scenarios: List[Scenario]
 
 
 class TasksRouterBuilder:
@@ -77,6 +77,6 @@ class TasksRouterBuilder:
                     description = data.get("description", "")
                     scenarios.append(Scenario(name=file.split('.json')[0], description=description))
 
-            return scenarios
+            return Scenarios(scenarios=scenarios)
 
         return router

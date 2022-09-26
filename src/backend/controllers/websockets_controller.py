@@ -64,7 +64,6 @@ class WebsocketService:
                         websocket.close()
                         print("Error accepting socket, not validated")
                         continue
-
                     self.websockets[str(connect_model.workstation)].append(websocket)
                     added = True
         except Exception as e:
@@ -78,7 +77,7 @@ class WebsocketService:
             print(f"Error accepting socket connection: {e}")
 
     def validate(self, cookie: str):
-        pass
+        return True
         # return self.authController.validate(cookie, PermissionType.READ)
 
 
