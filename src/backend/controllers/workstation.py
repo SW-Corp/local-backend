@@ -15,6 +15,7 @@ from backend.controllers.websockets_controller import (
 from ..utils import get_logger
 from .tasks import TasksController
 from .workstation_store import (
+    Component,
     ComponentType,
     MetricType,
     WorkstationInfo,
@@ -59,6 +60,7 @@ class TankState(BaseModel):
     offset: float
     water_level: float
     float_switch_up: bool
+    water_volume: float
 
 
 class WorkstationMetricsState(BaseModel):
@@ -185,17 +187,22 @@ class WorkstationController:
             for tank in stateJson["tanks"]:
                 pressure = stateJson["tanks"][tank][MetricType.PRESSURE]
                 float_switch_up = stateJson["tanks"][tank][MetricType.FLOAT_SWITCH_UP]
-                offset = list(
+                tankComponent: Component = list(
                     filter(
                         lambda x: x.name == tank, self.store[workstationName].components
                     )
-                )[0].offset
+                )[0]
+                offset= tankComponent.offset
+                width = tankComponent.width
+                lenght = tankComponent.length
+
                 water_level = pressure - referencePressure - offset + 1
                 workstationState.tanks[tank] = TankState(
                     pressure=pressure,
                     offset=offset,
                     water_level=water_level,
                     float_switch_up=float_switch_up,
+                    water_volume = width*lenght*water_level
                 )
                 metricList.metrics.append(
                     MetricsData(

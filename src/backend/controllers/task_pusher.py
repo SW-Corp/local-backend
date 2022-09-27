@@ -92,6 +92,9 @@ class TaskPusherThread(Thread):
             self.processing_task = True
             logger.debug("Got task from the queue")
 
+            if task.action == TaskAction.STOP:
+                self.currentScenario = ""
+                
             if task.action == TaskAction.START_SCENARIO:
                 self.currentScenario = task.target
                 continue
@@ -194,8 +197,9 @@ class TaskPusherThread(Thread):
 
     def check_initial_conditions(self, conditions: Conditions):         
         if not conditions:
+            print("no conditions")
             return True
-        conditions: List[Condition] = conditions.conditionlist
+        conditions_list: List[Condition] = conditions.conditionlist
 
 
         conditions_metrics = self.getConditionsMetrics(
@@ -207,8 +211,9 @@ class TaskPusherThread(Thread):
         )  # (measurement: vield): value
         try:
             if self.compare_metrics_and_conditions(
-                conditions.operator, conditions, metric_dict
+                conditions.operator, conditions_list, metric_dict
             ):
+                print("conditions met")
                 return True
         except KeyError as e:
             logger.error(f"Task condition is invalid, metric doesn't exist {e}")

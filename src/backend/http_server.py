@@ -89,7 +89,9 @@ class HTTPServer:
                 print(permission)
                 try:
                     cookie = request.cookies["Authorization"]
+                    print("cookie", cookie)
                 except Exception:
+                    print("no cookie")
                     return JSONResponse("Authorization cookie missing", 401)
                 try:
                     if authController.validate(cookie, permission):

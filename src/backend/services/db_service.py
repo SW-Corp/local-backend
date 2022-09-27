@@ -23,7 +23,7 @@ class DBService:
 
     def __post_init__(self):
         counter = 0
-        while counter<=10:
+        while counter<=60:
             try:
                 self.pool = SimpleConnectionPool(
                     port=self.config.port,

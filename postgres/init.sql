@@ -31,10 +31,12 @@ CREATE TABLE public.metrics(
 	component_type component_kind not null
 );
 
-CREATE TABLE public.tanks_offset(
+CREATE TABLE public.tanks_details(
 	id SERIAL PRIMARY KEY,
 	component_name varchar not null,
 	offset_ real not null,
+	width real not null,
+	length_ real not null,
 	foreign key (component_name) references components(name)
 );
 
@@ -74,10 +76,10 @@ INSERT INTO public.metrics (metric_type, component_type)
 	('voltage', 'valve'),
 	('is_open', 'valve');
 
-INSERT INTO public.tanks_offset (component_name, offset_)
+INSERT INTO public.tanks_details (component_name, offset_, width, length_)
 	VALUES
-	('C1', -1.5),
-	('C2', 1.5),
-	('C3', -2.27),
-	('C4', 0),
-	('C5', -1);
+	('C1', -1.5, 11, 18),
+	('C2', 1.5, 10, 10),
+	('C3', -2.27, 10, 10),
+	('C4', 0, 10, 10),
+	('C5', -1, 11, 18);

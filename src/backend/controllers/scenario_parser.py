@@ -4,7 +4,7 @@ from dataclasses import dataclass
 from typing import List, Tuple
 from ..exceptions.task import ErrorParsingTask
 from .task_models import Condition, Conditions, ConditionType, Operator, Task
-
+import traceback
 
 @dataclass
 class ScenarioParser:
@@ -14,12 +14,13 @@ class ScenarioParser:
                 data = json.load(file)
                 return self.parse_from_json(data)
             except Exception as e:
-                logger.error(f"Error parsing task {e}")
+                logger.error(f"Error parsing task {e}{traceback.format_exc()}")
                 raise ErrorParsingTask
              
 
     def parse_from_json(self, data) -> Tuple[List[Task], Conditions]:
-        initial_contitions: Conditions(self.getConditions(task.data("initial_conditions", None)))
+        initial_contitions: Conditions = self.getConditions(data.get("initial_conditions", None))
+
         taskList: List[Task] = []
         
 

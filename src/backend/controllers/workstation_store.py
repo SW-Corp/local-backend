@@ -34,6 +34,8 @@ class Component(BaseModel):
     display_name: str
     component_type: ComponentType
     offset: Optional[float]  # only for tanks
+    width: Optional[float]  # only for tanks
+    length: Optional[float] # only for tanks
 
 
 class ComponentMetric(BaseModel):
@@ -50,7 +52,7 @@ class WorkstationSpecification(BaseModel):
 def init_store(dbService):
     store = {}
     worstations_query = "SELECT * FROM WORKSTATIONS"
-    components_query = "SELECT * FROM COMPONENTS LEFT JOIN TANKS_OFFSET on COMPONENTS.name = TANKS_OFFSET.component_name"
+    components_query = "SELECT * FROM COMPONENTS LEFT JOIN TANKS_DETAILS on COMPONENTS.name = TANKS_DETAILS.component_name"
     metrics_query = "SELECT * FROM COMPONENTS INNER JOIN METRICS on COMPONENTS.component_type = METRICS.component_type;"
 
     workstations_response = dbService.run_query(worstations_query)
@@ -82,8 +84,12 @@ def init_store(dbService):
 
         for component in component_records:
             offset = None
+            width = None
+            lenght = None
             if component["component_type"] == ComponentType.TANK:
                 offset = component["offset_"]
+                width = component["width"]
+                lenght = component["length_"]
             components.append(
                 Component(
                     component_id=component["component_id"],
@@ -91,6 +97,8 @@ def init_store(dbService):
                     display_name=component["display_name"],
                     component_type=ComponentType(component["component_type"]),
                     offset=offset,
+                    width=width,
+                    length=lenght
                 )
             )
         # component is stored in metrics and in components idk its kinda sloppy but its easier thiw way xd
