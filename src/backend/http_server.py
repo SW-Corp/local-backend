@@ -86,10 +86,8 @@ class HTTPServer:
                 return response
             else:
                 permission: PermissionType = get_permission(path)
-                print(permission)
                 try:
                     cookie = request.cookies["Authorization"]
-                    print("cookie", cookie)
                 except Exception:
                     print("no cookie")
                     return JSONResponse("Authorization cookie missing", 401)

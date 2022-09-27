@@ -94,7 +94,7 @@ class TaskPusherThread(Thread):
 
             if task.action == TaskAction.STOP:
                 self.currentScenario = ""
-                
+
             if task.action == TaskAction.START_SCENARIO:
                 self.currentScenario = task.target
                 continue
@@ -149,6 +149,8 @@ class TaskPusherThread(Thread):
             for condition in conditions:
                 expected_value = condition.value
                 metric_value = metric_dict[(condition.measurement, condition.field)]
+                print(condition.measurement, condition.field)
+                print(expected_value, metric_value, condition.type)
                 if not compare_func[condition.type](metric_value, expected_value):
                     return False
             return True
@@ -218,7 +220,7 @@ class TaskPusherThread(Thread):
         except KeyError as e:
             logger.error(f"Task condition is invalid, metric doesn't exist {e}")
             return False
-
+        logger.info("Conditions not met")
         return False
 
     def send_task(self, httpconnection: HTTPConnection, task: Task):

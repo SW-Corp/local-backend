@@ -9,7 +9,7 @@ up:
 	docker compose up
 
 all:
-	docker compose up --build
+	docker compose up --build -d
 
 all-nobase:
 	docker-compose up --build server authenticator
