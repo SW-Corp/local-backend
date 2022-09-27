@@ -62,7 +62,7 @@ class TasksRouterBuilder:
                 raise HTTPException(500, "Invalid scenario format")
 
             if not self.tasksController.pushingThreads[workstation].checkInitialConditions(initial_conditions):
-                raise HTTPException()
+                raise HTTPException(400, "Initial conditions not met")
             
             self.tasksController.addTask(workstation, Task(
                 action=TaskAction("start_scenario"),
