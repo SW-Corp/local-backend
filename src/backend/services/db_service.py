@@ -34,10 +34,10 @@ class DBService:
                     minconn=1,
                     maxconn=10,
                 )
-                break
                 logger.info(
                     "Connected to db"
                 )
+                break
             except Exception as e:
                 logger.error(
                     f"Error connecting to DB ({self.config.host}:{self.config.port}): {e}"
