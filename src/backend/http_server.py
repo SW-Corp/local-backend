@@ -128,7 +128,10 @@ class HTTPServer:
 
         app.add_middleware(
             CORSMiddleware,
-            allow_origins=["*"],
+            allow_origins=[
+                "http://localhost", "http://localhost:3000", "localhost", "localhost:3000", "control.lab", "http://control.lab",
+                "http://10.8.0.9", "http://10.8.0.9:3000"
+            ],
             allow_credentials=True,
             allow_methods=["*"],
             allow_headers=["*"],
