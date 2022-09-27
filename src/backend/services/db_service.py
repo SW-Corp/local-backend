@@ -2,7 +2,7 @@ from dataclasses import dataclass
 
 from psycopg2.extras import RealDictCursor
 from psycopg2.pool import SimpleConnectionPool
-
+import time
 from ..utils import get_logger
 
 logger = get_logger("POSTGRES")
@@ -22,21 +22,28 @@ class DBService:
     config: DBConfig
 
     def __post_init__(self):
-        try:
-            self.pool = SimpleConnectionPool(
-                port=self.config.port,
-                user=self.config.user,
-                password=self.config.password,
-                host=self.config.host,
-                database=self.config.db,
-                minconn=1,
-                maxconn=10,
-            )
-        except Exception as e:
-            logger.error(
-                f"Error connecting to DB ({self.config.host}:{self.config.port}): {e}"
-            )
-            exit(1)
+        counter = 0
+        while counter<=10:
+            try:
+                self.pool = SimpleConnectionPool(
+                    port=self.config.port,
+                    user=self.config.user,
+                    password=self.config.password,
+                    host=self.config.host,
+                    database=self.config.db,
+                    minconn=1,
+                    maxconn=10,
+                )
+                break
+                logger.info(
+                    "Connected to db"
+                )
+            except Exception as e:
+                logger.error(
+                    f"Error connecting to DB ({self.config.host}:{self.config.port}): {e}"
+                )
+                counter += 1
+                time.sleep(1)
 
     def run_query(self, query: str):
         connection = self.pool.getconn()
