@@ -130,7 +130,7 @@ class HTTPServer:
             CORSMiddleware,
             allow_origins=[
                 "http://localhost", "http://localhost:3000", "localhost", "localhost:3000", "control.lab", "http://control.lab",
-                "http://10.8.0.9", "http://10.8.0.9:3000"
+                "http://10.8.0.9", "http://10.8.0.9:3000", "home.io", "http://home.io", "10.0.0.1", "http://10.0.0.1"
             ],
             allow_credentials=True,
             allow_methods=["*"],
