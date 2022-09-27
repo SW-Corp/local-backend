@@ -43,9 +43,10 @@ CREATE TABLE public.tanks_details(
 
 INSERT INTO public.users (email, password, permission)
 	VALUES 
-	('user@email.com','$2b$12$yOaeOCNaJybzzO7s13W06ur7bY4E82L.JdKJOkxfqHdY1EXT3Brh.', 'manage_users'),
-	('connector', '$2b$12$CsC/b7s06OjwglB9.4ivWuZfLLiLnizk85RnU.jKoKcaurWfme4oW', 'write');
-
+	('admin','$2b$12$CIwCxRJJuyGbPSPB7GiSg.t/VYcozivs.2DVaX9PkX8YCroqnaJM.', 'manage_users'),
+	('connector', '$2b$12$CsC/b7s06OjwglB9.4ivWuZfLLiLnizk85RnU.jKoKcaurWfme4oW', 'write'),
+	('student', '$2b$12$GWvgvcxIg6xeQknDZBYk7.PiBEashx4j1D88ttW5YiRo85BL5jhLi', 'read');
+	
 INSERT INTO public.workstations (name, display_name, description ,connector_address ,connector_port)
 	VALUES ('testworkstation', 'Testowa stacja', 'test', 'host', 7000);
 
