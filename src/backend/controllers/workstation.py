@@ -24,7 +24,7 @@ from .workstation_store import (
 
 logger = get_logger("WORKSTATION_CONTROLLER")
 
-HARDCODED_BUCKET = "YOUR-BUCKET"
+HARDCODED_BUCKET = "WORKSTATION-DATA"
 
 
 class MetricsData(BaseModel):

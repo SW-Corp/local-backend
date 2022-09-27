@@ -7,7 +7,7 @@ from ..utils import get_logger
 
 logger = get_logger("IFLUX")
 
-HARDCODED_BUCKET = "YOUR-BUCKET"
+HARDCODED_BUCKET = "WORKSTATION-DATA"
 
 
 @dataclass

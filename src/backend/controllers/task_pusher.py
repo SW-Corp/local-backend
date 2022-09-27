@@ -17,13 +17,14 @@ from .task_models import (
     Task,
     TaskNotification,
     TaskStatus,
-    TaskAction
+    TaskAction,
+    Conditions
 )
 from .workstation_store import WorkstationSpecification
 
 logger = get_logger("Task pusher")
 
-HARDCODED_BUCKET = "YOUR-BUCKET"
+HARDCODED_BUCKET = "WORKSTATION-DATA"
 DEFAULT_TASK_TIMEOUT = 10
 
 compare_func = {
@@ -135,9 +136,6 @@ class TaskPusherThread(Thread):
     ):
         if op == Operator.OR:
             for condition in conditions:
-                # ignoring timeout conditions, they are handled earlier
-                if condition.type == ConditionType.TIMEOUT:
-                    continue
                 expected_value = condition.value
                 metric_value = metric_dict[(condition.measurement, condition.field)]
                 if compare_func[condition.type](metric_value, expected_value):
@@ -146,9 +144,6 @@ class TaskPusherThread(Thread):
 
         if op == Operator.AND:
             for condition in conditions:
-                if condition.type == ConditionType.TIMEOUT:
-                    continue
-
                 expected_value = condition.value
                 metric_value = metric_dict[(condition.measurement, condition.field)]
                 if not compare_func[condition.type](metric_value, expected_value):
@@ -193,7 +188,31 @@ class TaskPusherThread(Thread):
             except KeyError as e:
                 logger.error(f"Task condition is invalid, metric doesn't exist {e}")
                 return False
-            time.sleep(1)
+            time.sleep(0.5)
+
+        return False
+
+    def check_initial_conditions(self, conditions: Conditions):         
+        if not conditions:
+            return True
+        conditions: List[Condition] = conditions.conditionlist
+
+
+        conditions_metrics = self.getConditionsMetrics(
+            conditions.conditionlist
+        )
+        logger.info(f"got metrics {conditions_metrics}")
+        metric_dict: Dict[Tuple[str, str], float] = self.fluxtable_to_metrics_data(
+            conditions_metrics
+        )  # (measurement: vield): value
+        try:
+            if self.compare_metrics_and_conditions(
+                conditions.operator, conditions, metric_dict
+            ):
+                return True
+        except KeyError as e:
+            logger.error(f"Task condition is invalid, metric doesn't exist {e}")
+            return False
 
         return False
 

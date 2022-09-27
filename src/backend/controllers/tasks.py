@@ -15,7 +15,7 @@ from .task_pusher import ClearQueueSignal, TaskPusherThread
 from .workstation_store import WorkstationSpecification
 
 logger = get_logger("Tasks controller")
-HARDCODED_BUCKET = "YOUR-BUCKET"
+HARDCODED_BUCKET = "WORKSTATION-DATA"
 DEFAULT_TASK_TIMEOUT = 10
 
 

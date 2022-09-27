@@ -9,7 +9,7 @@ services:
     container_name: swcorp_server
     ports:
       - '8000:8000'
-    restart: 'unless-stopped'
+    restart: always
     extra_hosts:
       - "connector:host-gateway"  
     networks:
@@ -38,8 +38,8 @@ services:
       - DOCKER_INFLUXDB_INIT_MODE=setup
       - DOCKER_INFLUXDB_INIT_USERNAME=INFLUX_USER 
       - DOCKER_INFLUXDB_INIT_PASSWORD=INFLUX_PASS
-      - DOCKER_INFLUXDB_INIT_ORG=YOUR-ORG 
-      - DOCKER_INFLUXDB_INIT_BUCKET=YOUR-BUCKET 
+      - DOCKER_INFLUXDB_INIT_ORG=WATER-TREATMENT 
+      - DOCKER_INFLUXDB_INIT_BUCKET=WORKSTATION-DATA 
       - DOCKER_INFLUXDB_INIT_ADMIN_TOKEN=gigatajnytoken
     networks:
     - backend

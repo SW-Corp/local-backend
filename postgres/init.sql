@@ -76,8 +76,8 @@ INSERT INTO public.metrics (metric_type, component_type)
 
 INSERT INTO public.tanks_offset (component_name, offset_)
 	VALUES
-	('C1', 0),
-	('C2', 0),
-	('C3', 0),
+	('C1', -1.5),
+	('C2', 1.5),
+	('C3', -2.27),
 	('C4', 0),
-	('C5', 0);
+	('C5', -1);

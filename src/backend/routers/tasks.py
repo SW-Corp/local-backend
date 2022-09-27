@@ -11,6 +11,7 @@ from ..exceptions import WorkstationNotFound
 from pydantic import BaseModel
 import os, json
 
+
 class Scenario(BaseModel):
     name: str
     description: str
@@ -52,13 +53,17 @@ class TasksRouterBuilder:
         @router.post("/scenario/{workstation}/{scenario_name}")
         async def playScenario(workstation: str, scenario_name: str):
             try:
-                scenario: List[Task] = self.scenarioParser.parse_from_json_file(
+                scenario, initial_conditions = self.scenarioParser.parse_from_json_file(
                     f"./src/backend/assets/scenarios/{scenario_name}.json"
                 )
             except FileNotFoundError:
                 raise HTTPException(404, "Scenario not found")
             except Exception:
                 raise HTTPException(500, "Invalid scenario format")
+
+            if not self.tasksController.pushingThreads[workstation].checkInitialConditions(initial_conditions):
+                raise HTTPException()
+            
             self.tasksController.addTask(workstation, Task(
                 action=TaskAction("start_scenario"),
                 target=scenario_name,
