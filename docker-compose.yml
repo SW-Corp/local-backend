@@ -11,7 +11,7 @@ services:
       - '8000:8000'
     restart: always
     extra_hosts:
-      - "connector:host-gateway"  
+      - "host:host-gateway"  
     networks:
       - backend
 

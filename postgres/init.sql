@@ -45,7 +45,7 @@ INSERT INTO public.users (email, password, permission)
 	('connector', '$2b$12$CsC/b7s06OjwglB9.4ivWuZfLLiLnizk85RnU.jKoKcaurWfme4oW', 'write');
 
 INSERT INTO public.workstations (name, display_name, description ,connector_address ,connector_port)
-	VALUES ('testworkstation', 'Testowa stacja', 'test', 'connector', 7000);
+	VALUES ('testworkstation', 'Testowa stacja', 'test', 'host', 7000);
 
 INSERT INTO public.components (name, display_name, component_type, workstation)
 	VALUES 
