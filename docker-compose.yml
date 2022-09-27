@@ -49,6 +49,7 @@ services:
   authenticator:
     build: ./authenticator
     image: swcorp_authenticator_image
+    restart: always
     container_name: swcorp_authenticator
     networks: 
       - backend
