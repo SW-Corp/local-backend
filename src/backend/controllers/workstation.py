@@ -196,7 +196,7 @@ class WorkstationController:
                 width = tankComponent.width
                 lenght = tankComponent.length
 
-                water_level = pressure - referencePressure - offset + 1
+                water_level = pressure - referencePressure - offset
                 workstationState.tanks[tank] = TankState(
                     pressure=pressure,
                     offset=offset,
@@ -268,3 +268,24 @@ class WorkstationController:
                 self.store[workstationName].metrics,
             )
         )
+    def getMostRecentPressure(self, container: str):
+        query = f'from(bucket:"{HARDCODED_BUCKET}") \
+            |> range(start: -10s) \
+            |> tail(n: 1)\
+            |> filter(fn: (r) => (r._measurement == "pressure" and r._field == "{container}")) \
+            '
+        return self.influxService.read(query)[0].records[0].get_value()
+
+    def setOffsetInMemory(self, workstation, container, new_offset):
+        for i, element in enumerate(self.store[workstation].components):
+            if element.name == container:
+                self.store[workstation].components[i].offset = new_offset
+
+    def calibrateSensor(self, workstation: str, container: str):
+        containerPressure = self.getMostRecentPressure(container)
+        referencePressure = self.getMostRecentPressure("reference")
+        new_offset = 10 - (containerPressure-referencePressure)
+        updateOffsetQuery = f"UPDATE TANKS_DETAILS SET offset_ = {new_offset} WHERE component_name = '{container}'"
+
+        self.dbService.run_query_insert(updateOffsetQuery)
+        self.setOffsetInMemory(workstation, container, new_offset)

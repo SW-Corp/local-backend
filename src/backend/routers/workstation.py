@@ -1,3 +1,4 @@
+from backend.controllers import workstation
 from fastapi import APIRouter, HTTPException
 from fastapi.responses import Response
 
@@ -38,5 +39,9 @@ class WorkstationRouterBuilder:
         @router.post("/shutdown")
         async def shutdown():
             os.system("echo true > /shutdown_signal")
+
+        @router.post("/calibrate/{station}/{container}")
+        async def calibrate(station, container):
+            self.worstationController.calibrateSensor(station, container)
 
         return router
