@@ -1,8 +1,7 @@
 from typing import List
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Request
 from fastapi.responses import JSONResponse
-from backend.controllers import workstation
 from backend.controllers.task_models import TaskAction
 
 from ..controllers import Task, TasksController
@@ -89,5 +88,33 @@ class TasksRouterBuilder:
                     scenarios.append(Scenario(name=file.split('.json')[0], description=description))
 
             return Scenarios(scenarios=scenarios)
+
+        @router.delete("/scenario/{scenarioname}")
+        async def deleteScenario(scenarioname: str):
+            files = os.listdir("./src/backend/assets/scenarios")
+            if f"{scenarioname}.json" not in files:
+                return HTTPException(404, "Scenario not found")
+            try:
+                os.remove(f"./src/backend/assets/scenarios/{scenarioname}.json")
+            except Exception as e:
+                return HTTPException(500, f"Error deleting scenario: {e}")
+
+        @router.post("/addscenario/{scenarioname}")
+        async def addScenario(scenarioname, request: Request):
+            scenario = await request.json()
+            if f"{scenario}.json" in os.listdir("./src/backend/assets/scenarios"):
+                return HTTPException(400, f"Scenario already exists!")
+            try:
+                # validation
+                self.scenarioParser.parse_from_json(scenario)
+            except Exception as e:
+                return HTTPException(400, f"Invalid scenario: {e}")
+
+            try:
+                file = open(f"./src/backend/assets/scenarios/{scenarioname}.json", "w")
+                file.write(json.dumps(scenario))
+                file.close()
+            except Exception as e:
+                return HTTPException(500, f"Error adding scenario {e}")
 
         return router

@@ -38,6 +38,8 @@ WRITE_PATHS = [
     ("/task", "POST"),
     ("/scenario", "POST"),
     ("/metrics", "POST"),
+    ("/scenario", "DELETE"),
+    ("/addscenario", "POST")
 ]
 
 MANAGING_USERS_PATHS = [
