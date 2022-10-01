@@ -9,16 +9,11 @@ up:
 	docker compose up
 
 all:
-	docker compose up --build -d
-
-all-nobase:
-	docker-compose up --build server authenticator
+	bash ./shutdown_service/init_shutdown_service.sh
+	docker-compose up --build -d
 
 clean:
 	docker-compose down
-
-db:
-	docker-compose up --build -d postgres
 
 enviroment:
 	docker-compose up --build -d postgres influx authenticator

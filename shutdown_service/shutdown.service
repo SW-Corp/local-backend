@@ -1,0 +1,8 @@
+[Unit]
+Description=Service listening for shutdown signal from docker container
+
+[Service]
+ExecStart=/shutdown.sh start
+
+[Install]
+WantedBy=multi-user.target

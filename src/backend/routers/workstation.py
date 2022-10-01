@@ -3,6 +3,7 @@ from fastapi.responses import Response
 
 from ..controllers import MetricsList, WorkstationController
 from ..exceptions import WorkstationNotFound
+import os
 
 
 class WorkstationRouterBuilder:
@@ -33,5 +34,9 @@ class WorkstationRouterBuilder:
         @router.get("/metrics/{stationname}")
         async def pullMetrics(stationname):
             return self.worstationController.pullMetrics(stationname)
+
+        @router.post("/shutdown")
+        async def shutdown():
+            os.system("echo true > /shutdown_signal")
 
         return router
