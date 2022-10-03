@@ -18,7 +18,7 @@
         ]
     }
     ,
-    "description": "Scenariusz pompuje wode dopóki nie zostanie osiągnięty ustalony poziom wody.\n Warunki początkowe: poziom wody Zbiornik 1>5cm, Zbiornik 2>2cm",
+    "description": "Scenariusz pompuje wode dopóki nie zostanie osiągnięty ustalony poziom wody.\n Warunki początkowe: poziom wody Zbiornik 1>5cm, Zbiornik 2<2cm",
     "tasks": [
             {
                 "action": "is_on",
