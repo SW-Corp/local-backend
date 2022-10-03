@@ -235,15 +235,17 @@ class TaskPusherThread(Thread):
             conditions_metrics
         )  # (measurement: vield): value
         try:
-            if self.compare_metrics_and_conditions(
+            confition_met, log = self.compare_metrics_and_conditions(
                 conditions.operator, conditions_list, metric_dict
-            ):
-                print("conditions met")
+            )
+            if confition_met:
+                self.loggingService.log(f"Checking initial conditions. {log}")
                 return True
         except KeyError as e:
             logger.error(f"Task condition is invalid, metric doesn't exist {e}")
             return False
         logger.info("Conditions not met")
+        self.loggingService.log(f"Checking initial conditions. {log}")
         return False
 
     def send_task(self, httpconnection: HTTPConnection, task: Task):
