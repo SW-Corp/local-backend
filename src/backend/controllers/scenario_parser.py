@@ -32,6 +32,7 @@ class ScenarioParser:
                 value=task["value"],
                 timeout=task.get("timeout", None),
                 ttl=task.get("ttl", None),
+                drop_after_ttl=task.get("drop_after_ttl", False),
                 conditions=conditions,
             )
             taskList.append(taskItem)

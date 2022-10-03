@@ -50,6 +50,7 @@ class Task(BaseModel):
     ttl: Optional[int]
     timeout: Optional[int]
     conditions: Optional[Conditions]
+    drop_after_ttl: Optional[bool] = False
 
 
 class TaskNotification(BaseModel):

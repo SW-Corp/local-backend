@@ -215,7 +215,10 @@ class TaskPusherThread(Thread):
             time.sleep(0.5)
 
         self.loggingService.log(f"Scenario {self.currentScenario}: task reached it's ttl.")
-        return False
+        if task.drop_after_ttl:
+            return False
+        else:
+            return True
 
     def check_initial_conditions(self, conditions: Conditions):         
         if not conditions:
