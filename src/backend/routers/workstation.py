@@ -6,7 +6,6 @@ from ..controllers import MetricsList, WorkstationController
 from ..exceptions import WorkstationNotFound
 import os
 
-
 class WorkstationRouterBuilder:
     def __init__(self, worstationController: WorkstationController):
         self.worstationController: WorkstationController = worstationController
@@ -43,5 +42,9 @@ class WorkstationRouterBuilder:
         @router.post("/calibrate/{station}/{container}")
         async def calibrate(station, container):
             self.worstationController.calibrateSensor(station, container)
+
+        @router.get("/logs")
+        async def getLogs():
+            return self.worstationController.getLogs()
 
         return router

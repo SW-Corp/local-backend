@@ -2,6 +2,7 @@ from dataclasses import dataclass, field
 from queue import Queue
 from threading import Thread
 from typing import Dict, List
+from backend.controllers.logging_service import Logger
 
 from pydantic import BaseModel
 
@@ -30,6 +31,7 @@ class TasksController:
     workstationsData: Dict[str, WorkstationSpecification]
     influx_service: InfluxService
     notificationsService: NotificationsService
+    loggingService: Logger
     abort_task_signals: Dict[str, ClearQueueSignal] = field(default_factory=dict)
     pushingThreads: Dict[str, Thread] = field(default_factory=dict)
     taskQueuesStore: Dict[str, Queue[Task]] = field(default_factory=dict)
@@ -46,6 +48,7 @@ class TasksController:
                 self.influx_service,
                 self.abort_task_signals[station],
                 self.notificationsService,
+                self.loggingService,
             )
             thread.start()
 

@@ -5,6 +5,7 @@ from http.client import HTTPConnection
 from queue import Queue
 from threading import Thread
 from typing import Dict, List, Tuple
+from backend.controllers.logging_service import Logger
 
 from backend.controllers.websockets_controller import NotificationsService
 
@@ -61,7 +62,7 @@ class ClearQueueSignal:
 
 class TaskPusherThread(Thread):
     def __init__(
-        self, queue, workstationData, influx_service, abort_task, notificationsService
+        self, queue, workstationData, influx_service, abort_task, notificationsService, loggingService
     ):
         super(TaskPusherThread, self).__init__()
         self.queue: Queue[Task] = queue
@@ -69,6 +70,7 @@ class TaskPusherThread(Thread):
         self.influx_service: InfluxService = influx_service
         self.abort_task: ClearQueueSignal = abort_task
         self.notificationsService: NotificationsService = notificationsService
+        self.loggingService: Logger = loggingService
         self.processing_task: bool = False
         self.currentScenario: str = ""
         self.loop = asyncio.new_event_loop()
@@ -110,6 +112,9 @@ class TaskPusherThread(Thread):
             try:
                 self.processing_task = False
                 self.send_task(httpconnection, task)
+                log = f"Task sent: {task.json()}"
+                if self.currentScenario:
+                    self.loggingService.log(f"Scenario: {self.currentScenario}. {log}")
                 self.sendNotification(TaskStatus.SUCCESS, task)
             except Exception as e:
                 self.sendNotification(TaskStatus.CONNECTOR_ERROR, task)
@@ -142,8 +147,13 @@ class TaskPusherThread(Thread):
                 expected_value = condition.value
                 metric_value = metric_dict[(condition.measurement, condition.field)]
                 if compare_func[condition.type](metric_value, expected_value):
-                    return True
-            return False
+                    return (
+                        True, 
+                        f"""Scenario: {self.currentScenario}. 
+                        One or more conditions met: {condition.measurement} of {condition.field} {condition.type} {condition.value}. 
+                        Got value: {metric_value}""")
+
+            return (False, "None of the conditions in 'or' condition list met")
 
         if op == Operator.AND:
             for condition in conditions:
@@ -152,8 +162,14 @@ class TaskPusherThread(Thread):
                 print(condition.measurement, condition.field)
                 print(expected_value, metric_value, condition.type)
                 if not compare_func[condition.type](metric_value, expected_value):
-                    return False
-            return True
+                    return (
+                    False, 
+                    f"""
+                    Scenario: {self.currentScenario}. 
+                    Condition not met: {condition.measurement} of {condition.field} {condition.type} {condition.value}. 
+                    Got value: {metric_value}""")
+
+            return True, None
 
     def check_conditions(self, task: Task):
         beginning = time.time()
@@ -186,15 +202,19 @@ class TaskPusherThread(Thread):
                 conditions_metrics
             )  # (measurement: vield): value
             try:
-                if self.compare_metrics_and_conditions(
+                confition_met, log = self.compare_metrics_and_conditions(
                     task.conditions.operator, conditions, metric_dict
-                ):
+                )
+                if confition_met:
+                    self.loggingService.log(log)
                     return True
             except KeyError as e:
                 logger.error(f"Task condition is invalid, metric doesn't exist {e}")
+                self.loggingService.log(log)
                 return False
             time.sleep(0.5)
 
+        self.loggingService.log(f"Scenario {self.currentScenario}: task reached it's ttl.")
         return False
 
     def check_initial_conditions(self, conditions: Conditions):         

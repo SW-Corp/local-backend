@@ -1,5 +1,6 @@
 from dataclasses import dataclass, field
 from typing import Dict, List
+from backend.controllers.logging_service import Logger
 
 from pydantic import BaseModel
 
@@ -77,6 +78,7 @@ class WorkstationController:
     influxService: InfluxService
     notificationService: NotificationsService
     pushingStateService: PushingStateService
+    loggingService: Logger
     store: Dict[str, WorkstationSpecification] = field(
         default_factory=dict
     )  # read only
@@ -87,7 +89,7 @@ class WorkstationController:
         self.notificationService.init_service(list(self.store.keys()))
         self.pushingStateService.init_service(list(self.store.keys()))
         self.tasksController = TasksController(
-            self.store, self.influxService, self.notificationService
+            self.store, self.influxService, self.notificationService, self.loggingService
         )
 
     def getStation(self, station_name: str) -> WorkstationInfo:
@@ -289,3 +291,6 @@ class WorkstationController:
 
         self.dbService.run_query_insert(updateOffsetQuery)
         self.setOffsetInMemory(workstation, container, new_offset)
+
+    def getLogs(self):
+        return self.loggingService.getLoggingHistory()

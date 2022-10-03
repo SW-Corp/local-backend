@@ -17,6 +17,7 @@ from .controllers import (
 from .exceptions import AuthenticatorServiceException, InvalidCredentialsError
 from .routers import AuthRouterBuilder, TasksRouterBuilder, WorkstationRouterBuilder
 from .services import DBConfig, DBService, InfluxConfig, InfluxService
+from .controllers.logging_service import Logger
 
 NOT_SECURED_PATHS = [
     ("/login", "POST"),
@@ -30,7 +31,8 @@ READ_PATHS = [
     ("/tasklist", "GET"),
     ("/metrics", "GET"),
     ("/logout", "GET"),
-    ("/scenarios", "GET")
+    ("/scenarios", "GET"),
+    ("/logs", "GET")
 ]
 
 WRITE_PATHS = [
@@ -71,6 +73,7 @@ class HTTPServer:
     def build_app(self) -> FastAPI:  # noqa: C901
         app = FastAPI(title="HTTP keyserver", version="0.1")
         dbservice: DBService = DBService(self.dbconfig)
+        loggingService: Logger = Logger
         influx_service: InfluxService = InfluxService(self.influxconfig)
         authController: AuthController = AuthController(self.authconfig, dbservice)
         notificationsService: NotificationsService = NotificationsService(
@@ -78,7 +81,7 @@ class HTTPServer:
         )
         pushingStateService: PushingStateService = PushingStateService(authController)
         workstationController: WorkstationController = WorkstationController(
-            dbservice, influx_service, notificationsService, pushingStateService
+            dbservice, influx_service, notificationsService, pushingStateService, loggingService
         )
 
         @app.middleware("http")
