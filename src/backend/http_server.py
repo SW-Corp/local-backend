@@ -48,7 +48,8 @@ MANAGING_USERS_PATHS = [
     ("/users", "GET"),
     ("/user", "DELETE"),
     ("/permission", "POST"),
-    ("/shutdown", "POST")
+    ("/shutdown", "POST"),
+    ("/calibrate", "POST")
 ]
 
 AUTH_SCHEME = {
