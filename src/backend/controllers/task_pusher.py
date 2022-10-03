@@ -112,9 +112,12 @@ class TaskPusherThread(Thread):
             try:
                 self.processing_task = False
                 self.send_task(httpconnection, task)
+
                 log = f"Task sent: {task.json()}"
                 if self.currentScenario:
                     self.loggingService.log(f"Scenario: {self.currentScenario}. {log}")
+                else:
+                    self.loggingService.log(log)
                 self.sendNotification(TaskStatus.SUCCESS, task)
             except Exception as e:
                 self.sendNotification(TaskStatus.CONNECTOR_ERROR, task)
@@ -149,9 +152,9 @@ class TaskPusherThread(Thread):
                 if compare_func[condition.type](metric_value, expected_value):
                     return (
                         True, 
-                        f"""Scenario: {self.currentScenario}. \n
-                        One or more conditions met: {condition.measurement} of {condition.field} {condition.type} {condition.value}. \n
-                        Got value: {metric_value}""")
+                        f"""Scenario: {self.currentScenario}.
+One or more conditions met: {condition.measurement} of {condition.field} {condition.type} {condition.value}.
+Got value: {metric_value}""")
 
             return (False, "None of the conditions in 'or' condition list met")
 
@@ -164,10 +167,9 @@ class TaskPusherThread(Thread):
                 if not compare_func[condition.type](metric_value, expected_value):
                     return (
                     False, 
-                    f"""
-                    Scenario: {self.currentScenario}. \n
-                    Condition not met: {condition.measurement} of {condition.field} is {condition.type} than/to {condition.value}. \n
-                    Got value: {metric_value}""")
+                    f"""Scenario: {self.currentScenario}.
+Condition not met: {condition.measurement} of {condition.field} is {condition.type} than/to {condition.value}.
+Got value: {metric_value}""")
 
             return True, None
 
@@ -190,7 +192,6 @@ class TaskPusherThread(Thread):
             return True
         conditions: List[Condition] = task.conditions.conditionlist
 
-
         while time.time() <= timeout:
             if self.abort_task.get_value():
                 return False
@@ -210,7 +211,7 @@ class TaskPusherThread(Thread):
                     return True
             except KeyError as e:
                 logger.error(f"Task condition is invalid, metric doesn't exist {e}")
-                self.loggingService.log(log)
+                self.loggingService.log("Błąd przy sprawdzaniu warunków. Nie otrzymano metryk z bazy. Prawdopodomnie arduino lub connector uległ awarii")
                 return False
             time.sleep(0.5)
 
@@ -239,10 +240,11 @@ class TaskPusherThread(Thread):
                 conditions.operator, conditions_list, metric_dict
             )
             if confition_met:
-                log += f"Checking initial conditions. {log} \n"
+                log += f"Checking initial conditions. {log}\n"
                 return True
         except KeyError as e:
             logger.error(f"Task condition is invalid, metric doesn't exist {e}")
+            self.loggingService.log("Błąd przy sprawdzaniu warunków. Nie otrzymano metryk z bazy. Prawdopodomnie arduino lub connector uległ awarii")
             return False
         logger.info("Conditions not met")
         self.loggingService.log(f"Checking initial conditions. {log}")

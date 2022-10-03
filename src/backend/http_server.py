@@ -74,7 +74,7 @@ class HTTPServer:
     def build_app(self) -> FastAPI:  # noqa: C901
         app = FastAPI(title="HTTP keyserver", version="0.1")
         dbservice: DBService = DBService(self.dbconfig)
-        loggingService: Logger = Logger
+        loggingService: Logger = Logger()
         influx_service: InfluxService = InfluxService(self.influxconfig)
         authController: AuthController = AuthController(self.authconfig, dbservice)
         notificationsService: NotificationsService = NotificationsService(

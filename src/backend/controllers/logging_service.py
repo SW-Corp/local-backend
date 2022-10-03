@@ -11,7 +11,7 @@ class Logger():
 
     def log(self, message):
         if message:
-            self.queue.put((time.time(), message))
+            self.queue.put({"timestamp": time.time(), "log": message})
 
     def getLoggingHistory(self):
         return list(reversed(list(self.queue.queue)))
