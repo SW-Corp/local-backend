@@ -32,7 +32,7 @@ READ_PATHS = [
     ("/metrics", "GET"),
     ("/logout", "GET"),
     ("/scenarios", "GET"),
-    ("/logs", "GET")
+    ("/logs", "GET"),
     ("/scenario", "GET")
 ]
 
