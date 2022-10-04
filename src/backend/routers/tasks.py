@@ -116,5 +116,36 @@ class TasksRouterBuilder:
                 file.close()
             except Exception as e:
                 return HTTPException(500, f"Error adding scenario {e}")
+                
+        @router.get("/scenario/{scenario_name}")
+        async def playScenario(scenario_name: str):
+            try:        
+                with open(f"./src/backend/assets/scenarios/{scenario_name}.json", "r") as file:
+                    data = json.load(file)
+                    return data
+            except FileNotFoundError:
+                raise HTTPException(404, "Scenario not found")
+            except Exception:
+                raise HTTPException(500, "Error getting scenario")
+
+        @router.get("/editscenario/{scenario_name}")
+        async def playScenario(scenario_name: str, request: Request):
+            if f"{scenario_name}.json" in os.listdir("./src/backend/assets/scenarios"):
+                raise HTTPException(404, "Scenario not found")
+
+            scenario = await request.json()
+            try:
+                # validation
+                self.scenarioParser.parse_from_json(scenario)
+            except Exception as e:
+                return HTTPException(400, f"Invalid scenario: {e}")
+
+            try:
+                file = open(f"./src/backend/assets/scenarios/{scenario_name}.json", "w")
+                file.write(json.dumps(scenario))
+                file.close()
+            except Exception as e:
+                return HTTPException(500, f"Error adding scenario {e}")
+
 
         return router
