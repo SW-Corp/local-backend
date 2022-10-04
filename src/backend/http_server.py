@@ -33,6 +33,7 @@ READ_PATHS = [
     ("/logout", "GET"),
     ("/scenarios", "GET"),
     ("/logs", "GET")
+    ("/scenario", "GET")
 ]
 
 WRITE_PATHS = [
@@ -42,6 +43,7 @@ WRITE_PATHS = [
     ("/metrics", "POST"),
     ("/scenario", "DELETE"),
     ("/addscenario", "POST"),
+    ("/editscenario", "POST")
 ]
 
 MANAGING_USERS_PATHS = [
