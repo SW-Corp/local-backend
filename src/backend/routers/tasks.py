@@ -60,8 +60,9 @@ class TasksRouterBuilder:
             except Exception:
                 raise HTTPException(500, "Invalid scenario format")
             print(initial_conditions)
-
+            self.tasksController.pushingThreads[workstation].currentScenario = scenario_name
             if not self.tasksController.pushingThreads[workstation].check_initial_conditions(initial_conditions):
+                self.tasksController.pushingThreads[workstation].currentScenario = ""
                 raise HTTPException(400, "Initial conditions not met")
             
             self.tasksController.addTask(workstation, Task(
@@ -118,7 +119,7 @@ class TasksRouterBuilder:
                 return HTTPException(500, f"Error adding scenario {e}")
                 
         @router.get("/scenario/{scenario_name}")
-        async def playScenario(scenario_name: str):
+        async def getScenario(scenario_name: str):
             try:        
                 with open(f"./src/backend/assets/scenarios/{scenario_name}.json", "r") as file:
                     data = json.load(file)
@@ -128,24 +129,27 @@ class TasksRouterBuilder:
             except Exception:
                 raise HTTPException(500, "Error getting scenario")
 
-        @router.get("/editscenario/{scenario_name}")
-        async def playScenario(scenario_name: str, request: Request):
-            if f"{scenario_name}.json" in os.listdir("./src/backend/assets/scenarios"):
+        @router.post("/editscenario/{scenario_name}")
+        async def editScenario(scenario_name: str, request: Request):
+            if f"{scenario_name}.json" not in os.listdir("./src/backend/assets/scenarios"):
                 raise HTTPException(404, "Scenario not found")
 
             scenario = await request.json()
             try:
                 # validation
+                print("pre validation")
                 self.scenarioParser.parse_from_json(scenario)
+                print("after validation")
             except Exception as e:
-                return HTTPException(400, f"Invalid scenario: {e}")
+                raise HTTPException(400, f"Invalid scenario: {e}")
 
             try:
-                file = open(f"./src/backend/assets/scenarios/{scenario_name}.json", "w")
-                file.write(json.dumps(scenario))
-                file.close()
+                print("writing")
+                with open(f"./src/backend/assets/scenarios/{scenario_name}.json", "w") as file:
+                    file.write(json.dumps(scenario))
+                    print("write")
             except Exception as e:
-                return HTTPException(500, f"Error adding scenario {e}")
+                raise HTTPException(500, f"Error adding scenario {e}")
 
 
         return router

@@ -240,7 +240,7 @@ Got value: {metric_value}""")
                 conditions.operator, conditions_list, metric_dict
             )
             if confition_met:
-                log += f"Checking initial conditions. {log}\n"
+                log = f"Checking initial conditions. {log}\n"
                 return True
         except KeyError as e:
             logger.error(f"Task condition is invalid, metric doesn't exist {e}")
