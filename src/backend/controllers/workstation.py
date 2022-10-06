@@ -198,7 +198,7 @@ class WorkstationController:
                 width = tankComponent.width
                 lenght = tankComponent.length
 
-                water_level = pressure - referencePressure - offset
+                water_level = pressure - referencePressure + offset
                 workstationState.tanks[tank] = TankState(
                     pressure=pressure,
                     offset=offset,
