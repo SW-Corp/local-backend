@@ -5,6 +5,8 @@ from psycopg2.pool import SimpleConnectionPool
 import time
 from ..utils import get_logger
 
+from typing import Tuple
+
 logger = get_logger("POSTGRES")
 
 
@@ -57,11 +59,11 @@ class DBService:
         else:
             raise Exception
 
-    def run_query_insert(self, query: str):
+    def run_query_insert(self, query: str, args: Tuple):
         connection = self.pool.getconn()
         if connection:
             cursor = connection.cursor()
-            cursor.execute(query)
+            cursor.execute(query, args)
             connection.commit()
             cursor.close()
             self.pool.putconn(connection)

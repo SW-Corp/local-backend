@@ -98,12 +98,13 @@ class AuthController:
         return True
 
     def add_permission(self, permission: Permission):
-        query = f"UPDATE USERS SET permission = '{permission.permission}' WHERE email = '{permission.user}'"
-        self.dbService.run_query_insert(query)
+        # query = f"UPDATE USERS SET permission = '{permission.permission}' WHERE email = '{permission.user}'"
+        query = f"UPDATE USERS SET permission = %s WHERE email = %s"
+        self.dbService.run_query_insert(query, (permission.permission, permission.user, ))
 
     def delete_user(self, user: str):
-        query = f"DELETE FROM USERS WHERE email = '{user}'"
-        self.dbService.run_query_insert(query)
+        query = f"DELETE FROM USERS WHERE email = %s"
+        self.dbService.run_query_insert(query, (user, ))
 
     def get_users(self) -> UserList:
         query = 'SELECT "email", "permission" FROM USERS'
