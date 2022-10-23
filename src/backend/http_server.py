@@ -89,6 +89,9 @@ class HTTPServer:
 
         @app.middleware("http")
         async def authMiddleware(request: Request, call_next):
+            def with_cookie_delete(jsonresonse: JSONResponse) -> JSONResponse:
+                jsonresonse.delete_cookie("Authorization")
+                return jsonresonse
             path = (f"/{request.scope['path'].split('/')[1]}", request.scope["method"])
             if path in NOT_SECURED_PATHS or self.authconfig.mode == "OFF":
                 response = await call_next(request)
@@ -99,16 +102,16 @@ class HTTPServer:
                     cookie = request.cookies["Authorization"]
                 except Exception:
                     print("no cookie")
-                    return JSONResponse("Authorization cookie missing", 401)
+                    return with_cookie_delete(JSONResponse("Authorization cookie missing", 401))
                 try:
                     if authController.validate(cookie, permission):
                         user = authController.get_user_from_cookie(cookie)
                         request.state.request_user = user
                         response = await call_next(request)
                     else:
-                        JSONResponse("Wrong email or password", 401)
+                        return with_cookie_delete(JSONResponse("Wrong email or password", 401))
                 except InvalidCredentialsError as e:
-                    return JSONResponse(e.detail, 401)
+                    return with_cookie_delete(JSONResponse(e.detail, 401))
                 except AuthenticatorServiceException as e:
                     return JSONResponse(e.detail, 500)
                 except InsufficientPermission as e:
