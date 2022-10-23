@@ -43,15 +43,15 @@ WRITE_PATHS = [
     ("/metrics", "POST"),
     ("/scenario", "DELETE"),
     ("/addscenario", "POST"),
-    ("/editscenario", "POST")
+    ("/editscenario", "POST"),
+    ("/shutdown", "POST"),
 ]
 
 MANAGING_USERS_PATHS = [
     ("/users", "GET"),
     ("/user", "DELETE"),
     ("/permission", "POST"),
-    ("/shutdown", "POST"),
-    ("/calibrate", "POST")
+    ("/calibrate", "POST"),
 ]
 
 AUTH_SCHEME = {
