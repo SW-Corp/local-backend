@@ -5,11 +5,11 @@ from fastapi.responses import JSONResponse
 from backend.controllers.task_models import TaskAction
 
 from ..controllers import Task, TasksController
-from ..controllers.scenario_parser import ScenarioParser
+from ..controllers.scenario_parser import ScenarioParser, InvalidValue
 from ..exceptions import WorkstationNotFound
 from pydantic import BaseModel
 import os, json
-
+from backend.controllers.logging_service import Logger
 
 class Scenario(BaseModel):
     name: str
@@ -18,11 +18,12 @@ class Scenario(BaseModel):
 class Scenarios(BaseModel):
     scenarios: List[Scenario]
 
-
 class TasksRouterBuilder:
     def __init__(self, tasksController: TasksController):
         self.tasksController: TasksController = tasksController
         self.scenarioParser: ScenarioParser = ScenarioParser()
+        self.loggingService: Logger = Logger()
+
 
     def build(self) -> APIRouter:
         router = APIRouter()
@@ -94,29 +95,35 @@ class TasksRouterBuilder:
         async def deleteScenario(scenarioname: str):
             files = os.listdir("./src/backend/assets/scenarios")
             if f"{scenarioname}.json" not in files:
-                return HTTPException(404, "Scenario not found")
+                raise HTTPException(404, "Scenario not found")
             try:
                 os.remove(f"./src/backend/assets/scenarios/{scenarioname}.json")
             except Exception as e:
-                return HTTPException(500, f"Error deleting scenario: {e}")
+                raise HTTPException(500, f"Error deleting scenario: {e}")
 
         @router.post("/addscenario/{scenarioname}")
         async def addScenario(scenarioname, request: Request):
             scenario = await request.json()
             if f"{scenario}.json" in os.listdir("./src/backend/assets/scenarios"):
-                return HTTPException(400, f"Scenario already exists!")
+                raise HTTPException(400, f"Scenario already exists!")
             try:
                 # validation
                 self.scenarioParser.parse_from_json(scenario)
+            except KeyError as e:
+                self.loggingService.log(f"Error while adding scenario {scenarioname}. Missing field: {e}")
+                raise HTTPException(400, f"Missing field: {e}")
+            except InvalidValue as e:
+                self.loggingService.log(f"Error while adding scenario {scenarioname}. {e.message}")
+                raise HTTPException(400, e.message)
             except Exception as e:
-                return HTTPException(400, f"Invalid scenario: {e}")
+                raise HTTPException(400, f"Invalid scenario: {e}")
 
             try:
                 file = open(f"./src/backend/assets/scenarios/{scenarioname}.json", "w")
                 file.write(json.dumps(scenario))
                 file.close()
             except Exception as e:
-                return HTTPException(500, f"Error adding scenario {e}")
+                raise HTTPException(500, f"Error adding scenario {e}")
                 
         @router.get("/scenario/{scenario_name}")
         async def getScenario(scenario_name: str):
@@ -137,9 +144,13 @@ class TasksRouterBuilder:
             scenario = await request.json()
             try:
                 # validation
-                print("pre validation")
                 self.scenarioParser.parse_from_json(scenario)
-                print("after validation")
+            except KeyError as e:
+                self.loggingService.log(f"Error while editing scenario {scenario_name}. {e}")
+                raise HTTPException(400, f"Missing field: {e}")
+            except InvalidValue as e:
+                self.loggingService.log(f"Error while editing scenario {scenario_name}. {e.message}")
+                raise HTTPException(400, e.message)
             except Exception as e:
                 raise HTTPException(400, f"Invalid scenario: {e}")
 
