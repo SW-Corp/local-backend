@@ -287,9 +287,9 @@ class WorkstationController:
         containerPressure = self.getMostRecentPressure(container)
         referencePressure = self.getMostRecentPressure("reference")
         new_offset = 10 - (containerPressure-referencePressure)
-        updateOffsetQuery = f"UPDATE TANKS_DETAILS SET offset_ = {new_offset} WHERE component_name = '{container}'"
+        updateOffsetQuery = f"UPDATE TANKS_DETAILS SET offset_ = %s WHERE component_name = %s"
 
-        self.dbService.run_query_insert(updateOffsetQuery)
+        self.dbService.run_query_insert(updateOffsetQuery, (new_offset, container))
         self.setOffsetInMemory(workstation, container, new_offset)
 
     def getLogs(self):
