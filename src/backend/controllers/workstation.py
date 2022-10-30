@@ -165,12 +165,8 @@ class WorkstationController:
             for pump in stateJson["pumps"]:
                 voltage = stateJson["pumps"][pump][MetricType.VOLTAGE]
                 current = stateJson["pumps"][pump][MetricType.CURRENT]
-                pumpNumber = pump[1:]
-                float_switch_up = stateJson["tanks"][f"C{pumpNumber}"][
-                    MetricType.FLOAT_SWITCH_UP
-                ]
 
-                if voltage > 4 and current > 40 and not float_switch_up:
+                if voltage > 4 and current > 40:
                     is_on = 1
                 else:
                     is_on = 0
