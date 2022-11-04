@@ -1,16 +1,16 @@
 # Komponenty oprogramowania:
 
-    Backend server 
-    Postgres
-    InfluxDB
-    Authenticator
-    Connector
-    Frontend
+- Backend server 
+- Postgres
+- InfluxDB
+- Authenticator
+- Connector
+- Frontend
 
 Wszystkie komponenty poza frontendem są skonteneryzowane przy użyciu Dockera.
 
 ## Backend server 
-Serwer HTTPS, będący głównym komponentem systemu spajającym wszystko w całość. Udostępnia REST API pozwalające na zarządzanie zasobami, sterowanie stacją oraz pobieranie informacji o stacji i systemie. Dodatkowo serwis ten udostępnia również websockety dla zadań o charakterze asynchronicznym.
+Serwer HTTPS, będący głównym komponentem systemu spajającym wszystko w całość, udostępnia REST API pozwalające na zarządzanie zasobami, sterowanie stacją oraz pobieranie informacji o stacji i systemie. Dodatkowo serwis ten udostępnia również websockety dla zadań o charakterze asynchronicznym.
 
 Stack technologiczny: Python 3.9, FastAPI
 
@@ -18,7 +18,7 @@ Stack technologiczny: Python 3.9, FastAPI
 Relacyjna baza danych przechowująca specyfikację stacji, użytkowników i ich przywileje.
 
 ## Influx
-Baza danych przebiegów czasowych przechowująca surowe dane zbieranie z czujników (np. ciśnienie w zbiornikach, napięcie w pompach) ale także wartości wyliczone z surowych danych (np. poziom wody, stan pompy włączona/wyłączona)
+Baza przebiegów czasowych przechowująca surowe dane zbierane z czujników (np. ciśnienie w zbiornikach, napięcie i natężenie przepływające przez pompy) ale także wartości wyliczone z surowych danych (np. poziom wody, stan pompy włączona/wyłączona)
 
 ## Authenticator 
 Mikroserwis służący do autoryzacji i uwierzytelniania użytkowników.
@@ -26,7 +26,7 @@ Mikroserwis służący do autoryzacji i uwierzytelniania użytkowników.
 Stack technologiczny: Python 3.9
 
 ## Connector
-Serwis będący łącznikiem między mikrokontrolerem (Arduino) komunikującym się bezpośrednio ze stacją, a Backend serwerem.
+Serwis będący łącznikiem między mikrokontrolerem (Arduino), komunikujący się bezpośrednio ze stacją, a Backend serwerem.
 
 ## Frontend 
 Aplikacja webowa
@@ -51,7 +51,7 @@ https://lucid.app/lucidchart/3b34f2a0-714b-4b3c-9c2b-add233da9218/edit?viewport_
 
 ## Endpointy HTTP
 
-### Zaloguj sie POST /login
+### Zaloguj się **POST /login**
     
     Waliduje dane logowania. Sesja jest przechowywana w pliku cookie.
 
@@ -63,31 +63,32 @@ https://lucid.app/lucidchart/3b34f2a0-714b-4b3c-9c2b-add233da9218/edit?viewport_
 
     Wymagane uprawnienia: -
 
-### Zarejestruj się POST /signup
-    Tworzy nowego użytkownika.Nowy użytkownik ma jedynie uprawnienia do odczytu,
-    body :
+### Zarejestruj się **POST /signup**
+Tworzy nowego użytkownika. Nowy użytkownik ma jedynie uprawnienia do odczytu.
+```
+    body:
     {
         "email": "user@email.com",
         "password": "password"
     }
+```
+Wymagane uprawnienia: brak
 
-    Wymagane uprawnienia: -
+### Wyloguj się **GET /logout**
+Usuwa sesję użytkownika. Powoduje wylogowanie z aplikacji webowej.
 
-### Wyloguj się GET /logout
-    Usuwa sesję.
+Wymagane uprawnienia: brak
 
-    Wymagane uprawnienia: -
+### Pobierz nazwy wszystkich stacji **GET /workstations**
+Wymagane uprawnienia: read
 
-### Pobierz nazwy wszystkich stacji GET /workstations
-    Wymagane uprawnienia: read
+### Pobierz informacje o stacji **GET /workstation/{nazwa stacji}**
+Wymagane uprawnienia: read
 
-### Pobierz informacje o stacji GET /workstation/{nazwa stacji}
-    Wymagane uprawnienia: read
+### Dodaj nowe zadanie **POST /task/{nazwa stacji}**
+Wysyła polecenie do stacji np zamknij zawór x. Jest możliwość dodania warunków które muszą zostać spełnione żeby polecenie zostało wykonane.
 
-### Dodaj nowe zadanie POST /task/{nazwa stacji}
-    Wysyła polecenie do stacji np zamknij zawór x. Jest możliwość dodania warunków które muszą zostać spełnione żeby polecenie zostało wykonane.
-
-    body:{
+    body: {
         "action": "is_open",
         "target": "valve1",
         "value": 1,
@@ -110,37 +111,37 @@ https://lucid.app/lucidchart/3b34f2a0-714b-4b3c-9c2b-add233da9218/edit?viewport_
         }
     }
 
-    is_open dla zaworów (0/1)
-    is_on dla pomp (0/1)        
+is_open dla zaworów (0/1)
+is_on dla pomp (0/1)        
 
-    Wymagane uprawnienia: write
-
-
-### Wyczyść kolejkę zadań POST /fushqueue/{nazwa stacji}
-    Usuwa wszystkie polecenia czekające w kolejce, a także przerywa polecenie które aktualnie czeka na spełnienie warunków.
-
-    Wymagane uprawnienia: write
+Wymagane uprawnienia: write
 
 
-### Pobierz listę zadań do wykonania GET /tasklist/{nazwa stacji} (nieużywany)
-    Zwraca kolejkę zadań oczekujących na wykonanie
+### Wyczyść kolejkę zadań **POST /flushqueue/{nazwa stacji}**
+Usuwa wszystkie polecenia czekające w kolejce, a także przerywa polecenie które aktualnie czeka na spełnienie warunków.
+
+Wymagane uprawnienia: write
+
+
+### Pobierz listę zadań do wykonania **GET /tasklist/{nazwa stacji}** (nieużywany)
+Zwraca kolejkę zadań oczekujących na wykonanie
     
-    Wymagane uprawnienia: read
+Wymagane uprawnienia: read
 
-### Odtwórz scenariusz POST /scenario/{nazwa stacji}/{nazwa scenariusza}
-    Odtwarza jeden z wcześniej stworzonych scenariuszy. Scenariusz jest listą poleceń.
+### Odtwórz scenariusz **POST /scenario/{nazwa stacji}/{nazwa scenariusza}**
+Odtwarza jeden z wcześniej stworzonych scenariuszy. Scenariusz jest listą poleceń.
 
-    Wymagane uprawnienia: write
+Wymagane uprawnienia: write
 
-### Dodaj scenariusz POST /scenario/{nazwa scenariusza}
-    Dodaje nowy scenariusz.
+### Dodaj scenariusz **POST /scenario/{nazwa scenariusza}**
+Dodaje nowy scenariusz.
 
     body: schemat scenariusza (Patrz sekcja scenariusze) 
 
-    Wymagane uprawnienia: write
+Wymagane uprawnienia: write
 
 
-### Edytuj scenariusz POST /scenario/{nazwa scenariusza}
+### Edytuj scenariusz **POST /scenario/{nazwa scenariusza}**
     Edytuje istniejący scenariusz
 
     body: schemat scenariusza (Patrz sekcja scenariusze) 
@@ -160,8 +161,8 @@ https://lucid.app/lucidchart/3b34f2a0-714b-4b3c-9c2b-add233da9218/edit?viewport_
     Wymagane uprawnienia: read
 
 
-### Wyślij metryki POST /metrics/
-    Zapisuje metryki do bazy danych. Ten endpoint jest używany tylko przez Connectora
+### Wyślij metryki POST /metrics
+    Zapisuje metryki do bazy danych. Ten endpoint jest używany tylko przez Connector.
 
     body: {
         "workstation_name": "testworkstation",
@@ -203,7 +204,7 @@ https://lucid.app/lucidchart/3b34f2a0-714b-4b3c-9c2b-add233da9218/edit?viewport_
     Wymagane uprawienia: read
 
 # Komunikacja przez websockety
-Websockety są używane do komunikacji backend->frontend dla dwóch przypadków
+Websockety są używan0e do komunikacji backend->frontend dla dwóch przypadków
 
     Przesyłanie powiadomień
     Przesyłanie stanu stacji
@@ -230,7 +231,7 @@ Struktura danych stanu stacji przesyłana do Frontendu.
             <pozostałe pompy>
         },
         "valves": {
-            "V3": {
+            "V1": {
                 "voltage": 12,
                 "current": 1000,
                 "is_open": true
@@ -248,17 +249,16 @@ Struktura danych stanu stacji przesyłana do Frontendu.
             <pozostałe zbiorniki>
 
         },
-        "currentScenario": "", #aktualnie wykonywany scenariusz
-        "type": "state" #metadane
+        "currentScenario": "", # aktualnie wykonywany scenariusz
+        "type": "state" # metadane
     }
 
 # System scenariuszy
 
 ## Format przykładowego scenariusza
-//TODO
 
     {
-        "initial_conditions":{
+        "initial_conditions": {
             "operator": "and",
             "conditionlist": [
                 {
@@ -276,7 +276,9 @@ Struktura danych stanu stacji przesyłana do Frontendu.
             ]
         }
         ,
-        "description": "Opis": [
+        "description": "Opis":
+        "tasks": 
+        [
             {
                 "action": "is_on",
                 "target": "P2",
@@ -287,6 +289,7 @@ Struktura danych stanu stacji przesyłana do Frontendu.
                 "target": "P2",
                 "value": 0,
                 "ttl": 30,
+                "drop_after_ttl": true,
                 "conditions": {
                     "operator": "and",
                     "conditionlist": [
@@ -298,7 +301,288 @@ Struktura danych stanu stacji przesyłana do Frontendu.
                         }
                     ]
                 }
+            },
+            {
+                "action": "is_open",
+                "target": "V1",
+                "value": 1
+            },
+            {
+                "action": "is_open",
+                "target": "V1",
+                "value": 0,
+                "timeout": 5
             }
 
+        ]
+    }
+
+# Struktura obiektu scenariusz
+
+**initial_conditions** (opcjonalne) - obiekt conditons. Początkowe warunki które muszą zostać spełnione aby scenariusz został wykonany
+
+**description** - opis scenariusza (widoczny w aplikacji internetowej)
+
+**tasks** - lista obiektów task. Lista zadań składających się na scenariusz.
+
+# Struktura obiektu task
+
+    {
+        "action": "is_on",
+        "target": "P2",
+        "value": 0,
+        "timeout": 10,
+        "ttl": 30,
+        "drop_after_ttl": true,
+        "conditions": {
+            "operator": "and",
+            "conditionlist": [
+                {
+                    "type": "more",
+                    "measurement": "water_level",
+                    "field": "C3",
+                    "value": 5
+                }
+            ]
+        }
+    },
+
+**action** - zadanie wykonywane w tasku: is_on dla pomp, is_open dla zaworów
+
+**target** - komponent na którym zostanie wykonane zadanie: zawór (Vx) lub pompa (Px)
+
+**value** - wartość zadania: 1 - włączenie pompy/otwarcie zaworu , 0 - wyłączenie pompy/zamknięcie zaworu
+
+**timeout** (opcjonalne) - czas w sekundach po którym zadanie zostanie przetworzone. Podczas czekania na przeminięcie tego czasu kolejka zadań jest zablokowana. 
+
+**conditions** (opcjonalne) - obiekt typu conditions. Warunki na spełnienie których będzie czekało zadanie zanim zostanie przetworzone. Czekanie na spełnienie warunków blokuje kolejkę zadań
+
+**ttl** (opcjonalne, domyślnie **10s**) - czas w sekundach przez który system będzie czekał na spełnienie warunków taska.
+
+**drop_after_ttl** (opcjonalne, domyślnie **false**) - określa czy zadanie zostanie wykonane czy porzucone po minięciu czasu **ttl** bez spełnienia warunków. **false**  - zadanie zostanie wykonane po czasie ttl
+
+# Struktura obiektu conditions
+
+    {
+        "operator": "and",
+        "conditionlist": [
+            {
+                "measurement": "water_level",
+                "field": "C3",
+                "value": 5
+                "type": "more",
+            }
+        ]
+    }
+
+**operator** (and/or) - spójnik łączący warunki. And - wszystkie warunki muszą być spełnione, or - tylko jeden warunek musi zostać spełniony
+
+**conditionlist** - lista obiektów typu condition. Lista warunków
+
+# Struktura obiektu condition
+Warunek pozwala na uwarunkowanie wykonania zadania na podstawie dowolnej wartości dowolnej metryki
+
+    {
+        "measurement": "water_level",
+        "field": "C3",
+        "value": 5
+        "type": "more",
+    }
+
+
+**measurement** - typ metryki z której warunek będzie odczytywał wartość
+
+**field** - komponent którego dotyczy metryka (pompa, zawór lub zbiornik)
+
+**value** - wartość której oczekujemy
+
+**type** - typ warunku, określa czy oczekujemy że wartość metryki będzie większa, mniejsza lub równa podanej przez nas wartości
+
+### Typy pola measurement i komponenty których one dotyczą:
+
+- **current** - pompy, zawory
+- **voltage** - pompy, zawory
+- **water_level** - zbiorniki
+- **is_on** - pompy
+- **is_open** - zawory
+- **float_switch_up** - zbiorniki
+- **pressure** - zbiorniki
+
+### Wartości pola type:
+
+- equal
+- more
+- less
+- moreequal
+- lessequal
+
+## Przykładowe scenariusze
+
+### Włącz pompę P1 na 10 sekund 
+
+    {
+        "description": "Opis":
+        "tasks": 
+        [
+            {
+                "action": "is_on",
+                "target": "P1",
+                "value": 1
+            },
+            {
+                "timeout": 10
+                "action": "is_on",
+                "target": "P1",
+                "value": 0
+            }
+        ]
+    }
+
+### Włącz zawór V1 na tak długo aż poziom wody w C2 spadnie do 5cm
+
+    {
+        "description": "Opis":
+        "tasks": 
+        [
+            {
+                "action": "is_open",
+                "target": "V1",
+                "value": 1
+            },
+            {
+                "timeout": 10
+                "action": "is_open",
+                "target": "V1",
+                "value": 0,
+                "ttl": 30, # warunek bedzie czekał maks 30 sekund na spełnienie
+                "conditions": {
+                    "operator": "and",
+                    "conditionlist": [
+                    {
+                            "type": "more",
+                            "measurement": "water_level",
+                            "field": "C2",
+                            "value": 5
+                        }
+                    ]
+                }
+
+            }
+        ]
+    }
+
+### Otwórz wszystkie zawory i zamknij je w odstępach czasowych 10s
+
+Warunki początkowe: Poziom wody w zbiornikach C2, C3, C4 jest większy niż 5cm
+
+    {
+        "initial_conditions": {
+            "operator": "and",
+            "conditionlist": [
+                {
+                    "type": "more",
+                    "measurement": "water_level",
+                    "field": "C1",
+                    "value": 5
+                },
+                {
+                    "type": "more",
+                    "measurement": "water_level",
+                    "field": "C2",
+                    "value": 5
+                },
+                {
+                    "type": "more",
+                    "measurement": "water_level",
+                    "field": "C3",
+                    "value": 5
+                }
+            ]
+        }
+        "description": "Opis":
+        "tasks": 
+        [
+            {
+                "action": "is_open",
+                "target": "V1",
+                "value": 1
+            },
+            {
+                "action": "is_open",
+                "target": "V2",
+                "value": 1
+            },
+            {
+                "action": "is_open",
+                "target": "V3",
+                "value": 1
+            },
+            {
+                "timeout": 10, 
+                "action": "is_open",
+                "target": "V1",
+                "value": 0
+            },
+            {
+                "timeout": 10, # 20 sekund od startu scenariusza
+                "action": "is_open",
+                "target": "V2",
+                "value": 0
+            },
+            {
+                "timeout": 10, # 30 sekund od startu scenariusza
+                "action": "is_open",
+                "target": "V3",
+                "value": 0
+            },
+        ]
+    }
+
+### Pompuj wodę do zbiornika C2 aż osiągnie poziom 10cm albo gdy poziom wody z którego pompujesz (C1) spanie poniżej 2cm 
+Warunkiem początkowym oczywiście będzie poziom wody w C2<10cm, C1>2cm
+
+    {
+        "initial_conditions": {
+            "operator": "and",
+            "conditionlist": [
+                {
+                    "type": "less",
+                    "measurement": "water_level",
+                    "field": "C3",
+                    "value": 2
+                }
+            ]
+        }
+        "description": "Opis":
+        "tasks": 
+        [
+            {
+                "action": "is_on",
+                "target": "P1",
+                "value": 1
+            },
+            {
+                "action": "is_on",
+                "target": "P1",
+                "value": 0,
+                "ttl": 1000, # dowolna duża wartość, czekamy aż warunki zostaną spełnione
+                "conditions": {
+                    "operator": "or",
+                    "conditionlist": [
+                        {
+                            "type": "more",
+                            "measurement": "water_level",
+                            "field": "C2",
+                            "value": 10
+                        },
+                        {
+                            "type": "less",
+                            "measurement": "water_level",
+                            "field": "C1",
+                            "value": 2
+                        }
+                    ]
+                }
+            }
         ]
     }
